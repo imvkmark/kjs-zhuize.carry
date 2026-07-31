@@ -2,7 +2,6 @@
 
 MOBA 里的 Carry 位：前期猥琐发育，后期带飞全队。
 
-聚单云（JuDanYun）× 淘宝游戏专区 · 代练模块需求对齐与开发工作仓库。
 
 > **接手先读**:[`CLAUDE.md`](CLAUDE.md)（干活的规矩 · 黑名单 · 护栏 · 记忆治理）
 
@@ -10,7 +9,7 @@ MOBA 里的 Carry 位：前期猥琐发育，后期带飞全队。
 ## 快速开始
 
 ```bash
-git clone https://codeup.aliyun.com/qyd/kjs/zhuize/carry.git
+git clone https://github.com/imvkmark/kjs-zhuize.carry.git
 cd carry/docs/02-接口与仪表盘/dashboard
 # 用浏览器打开 index.html 即可查看项目工作台
 open index.html  # macOS
