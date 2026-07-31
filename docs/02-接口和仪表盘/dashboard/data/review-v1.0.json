@@ -10,26 +10,557 @@
     "fail": 11
   },
   "issues": {
-    "p0": { "total": 20 },
-    "p1": { "total": 31 },
-    "open": { "total": 22 }
+    "p0": {
+      "total": 20
+    },
+    "p1": {
+      "total": 31
+    },
+    "open": {
+      "total": 22
+    }
   },
   "remediationPlan": [
     {
       "deadline": "1周内",
-      "items": ["补全评审人/验收负责人", "Q3 / Q5 / Q6 / Q8 / Q9 / Q10 / Q13 / Q14 联合决策", "输出角色-菜单-Tab-动作-字段权限矩阵", "输出还号换绑字段映射表"]
+      "items": [
+        "补全评审人/验收负责人",
+        "Q3 / Q5 / Q6 / Q8 / Q9 / Q10 / Q13 / Q14 联合决策",
+        "输出角色-菜单-Tab-动作-字段权限矩阵",
+        "输出还号换绑字段映射表"
+      ]
     },
     {
       "deadline": "2周内",
-      "items": ["Q15 / Q16 / Q17 / Q18 / Q20 / Q21 / Q22 联合决策", "输出支付/退款/分期/资损完整规则表", "输出分期待还款/超额收款/多次部分退款规则说明", "补充三端字段口径对照表"]
+      "items": [
+        "Q15 / Q16 / Q17 / Q18 / Q20 / Q21 / Q22 联合决策",
+        "输出支付/退款/分期/资损完整规则表",
+        "输出分期待还款/超额收款/多次部分退款规则说明",
+        "补充三端字段口径对照表"
+      ]
     },
     {
       "deadline": "4周内",
-      "items": ["输出数据库 DDL 评审稿", "输出 OpenAPI 接口规范初稿", "输出前端开发规范 V1.0", "输出测试用例库", "输出上线迁移方案", "汇总为 V2.0 正式开发基线"]
+      "items": [
+        "输出数据库 DDL 评审稿",
+        "输出 OpenAPI 接口规范初稿",
+        "输出前端开发规范 V1.0",
+        "输出测试用例库",
+        "输出上线迁移方案",
+        "汇总为 V2.0 正式开发基线"
+      ]
     }
   ],
-  "visibleTo": ["boss", "product", "dev", "customer_success", "newcomer"],
-  "moduleLabel": "评审详情",
-  "moduleIcon": "📄",
-  "actions": ["detail"]
+  "blockers": {
+    "total": 3,
+    "items": [
+      {
+        "id": "blk-01",
+        "title": "支付网关沙箱账号未开通",
+        "blockingWhat": "支付模块联调无法启动",
+        "owner": "开发TL",
+        "severity": "critical",
+        "since": "2026-07-25",
+        "visibleTo": [
+          "dev",
+          "boss",
+          "product"
+        ],
+        "tags": [
+          "阻塞",
+          "支付"
+        ],
+        "priority": "P0",
+        "reqId": "LN-003",
+        "module": "m-未分类",
+        "requirement": "req-perf",
+        "status": "status-pending",
+        "clarifyType": "clarify-阻塞项",
+        "clarifyOrder": [
+          "A"
+        ],
+        "clarifyOwner": "开发"
+      },
+      {
+        "id": "blk-02",
+        "title": "角色权限矩阵未定案",
+        "blockingWhat": "全部权限相关开发",
+        "owner": "产品",
+        "severity": "critical",
+        "since": "2026-07-26",
+        "visibleTo": [
+          "dev",
+          "boss",
+          "product"
+        ],
+        "tags": [
+          "阻塞",
+          "权限"
+        ],
+        "priority": "P0",
+        "reqId": "LN-004",
+        "module": "m-未分类",
+        "requirement": "req-sec",
+        "status": "status-pending",
+        "clarifyType": "clarify-阻塞项",
+        "clarifyOrder": [
+          "A"
+        ],
+        "clarifyOwner": "产品"
+      },
+      {
+        "id": "blk-03",
+        "title": "H5 设备能力降级方案缺失",
+        "blockingWhat": "H5 端非功能验收无法进行",
+        "owner": "前端",
+        "severity": "high",
+        "since": "2026-07-28",
+        "visibleTo": [
+          "dev",
+          "boss",
+          "product"
+        ],
+        "tags": [
+          "阻塞"
+        ],
+        "priority": "P1",
+        "reqId": "LN-007",
+        "module": "m-未分类",
+        "requirement": "req-func",
+        "status": "status-pending",
+        "clarifyType": "clarify-阻塞项",
+        "clarifyOrder": [
+          "C"
+        ],
+        "clarifyOwner": "开发"
+      }
+    ]
+  },
+  "feedback": {
+    "total": 26,
+    "items": [
+      {
+        "id": "fb-01",
+        "author": "客户-王经理",
+        "content": "账号找回流程能否加人脸核验?",
+        "module": "m-账号安全",
+        "status": "status-pending",
+        "createdAt": "2026-07-29T14:22:00+08:00",
+        "copyText": "【反馈】账号安全-王经理:账号找回流程能否加人脸核验?",
+        "visibleTo": [
+          "customer_success",
+          "boss",
+          "product"
+        ],
+        "tags": [
+          "客户协作",
+          "权限"
+        ],
+        "priority": "P1",
+        "reqId": "LN-013",
+        "requirement": "req-sec",
+        "clarifyType": "clarify-QA",
+        "clarifyOrder": [
+          "C"
+        ],
+        "clarifyOwner": "产品"
+      },
+      {
+        "id": "fb-02",
+        "author": "业务-李主管",
+        "content": "追责员侧基础资料手机号是否同步展示?",
+        "module": "m-订单管理",
+        "status": "status-pending",
+        "createdAt": "2026-07-29T16:10:00+08:00",
+        "copyText": "【反馈】追责员-李主管:追责员侧基础资料手机号是否同步展示?",
+        "visibleTo": [
+          "customer_success",
+          "boss",
+          "product"
+        ],
+        "tags": [
+          "客户协作",
+          "需求"
+        ],
+        "priority": "P1",
+        "reqId": "LN-014",
+        "requirement": "req-func",
+        "clarifyType": "clarify-QA",
+        "clarifyOrder": [
+          "C"
+        ],
+        "clarifyOwner": "产品"
+      },
+      {
+        "id": "fb-03",
+        "author": "测试-赵工",
+        "content": "退款失败重试 SLA 是多少?现在测试环境重试 3 次就放弃,业务侧无法接受",
+        "module": "m-支付流程",
+        "status": "status-pending",
+        "createdAt": "2026-07-30T09:45:00+08:00",
+        "copyText": "【反馈】支付/退款-赵工:退款失败重试 SLA 是多少?现在测试环境重试 3 次就放弃,业务侧无法接受",
+        "visibleTo": [
+          "customer_success",
+          "product",
+          "dev"
+        ],
+        "tags": [
+          "客户协作",
+          "支付"
+        ],
+        "priority": "P1",
+        "reqId": "LN-015",
+        "requirement": "req-perf",
+        "clarifyType": "clarify-QA",
+        "clarifyOrder": [
+          "C"
+        ],
+        "clarifyOwner": "产品"
+      }
+    ]
+  },
+  "questions": {
+    "total": 35,
+    "items": [
+      {
+        "id": "q-15",
+        "question": "支付分期是否支持提前结清?",
+        "askedTo": "客户-财务负责人",
+        "status": "status-pending",
+        "raisedAt": "2026-07-26",
+        "deadline": "2026-08-13",
+        "copyText": "【待回复】Q15:支付分期是否支持提前结清?(截止 08-13)",
+        "visibleTo": [
+          "customer_success",
+          "product",
+          "boss"
+        ],
+        "tags": [
+          "客户协作",
+          "支付"
+        ],
+        "priority": "P1",
+        "reqId": "LN-010",
+        "module": "m-未分类",
+        "requirement": "req-perf",
+        "clarifyType": "clarify-QA",
+        "clarifyOrder": [
+          "C"
+        ],
+        "clarifyOwner": "客户"
+      },
+      {
+        "id": "q-16",
+        "question": "超额收款后,系统自动退款还是人工触发?",
+        "askedTo": "客户-财务负责人",
+        "status": "status-pending",
+        "raisedAt": "2026-07-26",
+        "deadline": "2026-08-13",
+        "copyText": "【待回复】Q16:超额收款后,系统自动退款还是人工触发?(截止 08-13)",
+        "visibleTo": [
+          "customer_success",
+          "product",
+          "boss"
+        ],
+        "tags": [
+          "客户协作",
+          "支付"
+        ],
+        "priority": "P1",
+        "reqId": "LN-011",
+        "module": "m-未分类",
+        "requirement": "req-perf",
+        "clarifyType": "clarify-QA",
+        "clarifyOrder": [
+          "C"
+        ],
+        "clarifyOwner": "客户"
+      },
+      {
+        "id": "q-17",
+        "question": "多次部分退款是否需要审批流?",
+        "askedTo": "客户-财务负责人",
+        "status": "status-pending",
+        "raisedAt": "2026-07-27",
+        "deadline": "2026-08-13",
+        "copyText": "【待回复】Q17:多次部分退款是否需要审批流?(截止 08-13)",
+        "visibleTo": [
+          "customer_success",
+          "product",
+          "boss"
+        ],
+        "tags": [
+          "客户协作",
+          "支付"
+        ],
+        "priority": "P1",
+        "reqId": "LN-012",
+        "module": "m-未分类",
+        "requirement": "req-perf",
+        "clarifyType": "clarify-QA",
+        "clarifyOrder": [
+          "C"
+        ],
+        "clarifyOwner": "客户"
+      }
+    ]
+  },
+  "externalDeps": {
+    "total": 15,
+    "items": [
+      {
+        "id": "dep-03",
+        "name": "老系统数据迁移策略",
+        "dependsOn": "客户-数据团队",
+        "status": "status-resolved",
+        "impact": "阻塞数据库正式建表",
+        "owner": "项目经理",
+        "expectedDate": "2026-08-20",
+        "copyText": "【外部依赖】老系统数据迁移策略(阻塞中,客户-数据团队,预计 08-20,阻塞数据库正式建表)",
+        "visibleTo": [
+          "customer_success",
+          "product",
+          "boss",
+          "dev"
+        ],
+        "tags": [
+          "客户协作",
+          "阻塞"
+        ],
+        "priority": "P0",
+        "reqId": "LN-005",
+        "module": "m-未分类",
+        "requirement": "req-func",
+        "clarifyType": "clarify-外部依赖",
+        "clarifyOrder": [
+          "B"
+        ],
+        "clarifyOwner": "产品"
+      },
+      {
+        "id": "dep-01",
+        "name": "支付网关 API 联调环境",
+        "dependsOn": "第三方支付团队",
+        "status": "status-pending",
+        "impact": "阻塞支付模块开发",
+        "owner": "项目经理",
+        "expectedDate": "2026-08-05",
+        "copyText": "【外部依赖】支付网关 API 联调环境(等待第三方支付团队,预计 08-05,阻塞支付模块开发)",
+        "visibleTo": [
+          "customer_success",
+          "product",
+          "boss",
+          "dev"
+        ],
+        "tags": [
+          "客户协作",
+          "支付",
+          "阻塞"
+        ],
+        "priority": "P1",
+        "reqId": "LN-008",
+        "module": "m-未分类",
+        "requirement": "req-perf",
+        "clarifyType": "clarify-外部依赖",
+        "clarifyOrder": [
+          "C"
+        ],
+        "clarifyOwner": "产品"
+      },
+      {
+        "id": "dep-02",
+        "name": "人脸服务合规备案",
+        "dependsOn": "法务+第三方人脸服务",
+        "status": "status-pending",
+        "impact": "阻塞 H5 人脸采集功能",
+        "owner": "项目经理",
+        "expectedDate": "2026-08-15",
+        "copyText": "【外部依赖】人脸服务合规备案(等待法务+第三方人脸服务,预计 08-15,阻塞 H5 人脸采集)",
+        "visibleTo": [
+          "customer_success",
+          "product",
+          "boss"
+        ],
+        "tags": [
+          "客户协作",
+          "权限",
+          "阻塞"
+        ],
+        "priority": "P1",
+        "reqId": "LN-009",
+        "module": "m-未分类",
+        "requirement": "req-sec",
+        "clarifyType": "clarify-外部依赖",
+        "clarifyOrder": [
+          "C"
+        ],
+        "clarifyOwner": "产品"
+      }
+    ]
+  },
+  "codeDiff": {
+    "total": 17,
+    "items": [
+      {
+        "id": "diff-01",
+        "module": "m-账号安全",
+        "filePath": "src/main/java/com/carry/trade/TradeOrderService.java",
+        "changeType": "modified",
+        "linesAdded": 42,
+        "linesRemoved": 11,
+        "relatedIssue": "issue-001",
+        "commitSha": "a1b2c3d",
+        "visibleTo": [
+          "dev"
+        ],
+        "tags": [
+          "代码",
+          "支付"
+        ],
+        "priority": "P2",
+        "reqId": "LN-016",
+        "requirement": "req-sec",
+        "status": "status-pending",
+        "clarifyType": "clarify-QA",
+        "clarifyOrder": [
+          "D"
+        ],
+        "clarifyOwner": "产品"
+      },
+      {
+        "id": "diff-02",
+        "module": "m-账号安全",
+        "filePath": "src/main/java/com/carry/trade/PaymentService.java",
+        "changeType": "added",
+        "linesAdded": 138,
+        "linesRemoved": 0,
+        "relatedIssue": "issue-005",
+        "commitSha": "b2c3d4e",
+        "visibleTo": [
+          "dev"
+        ],
+        "tags": [
+          "代码",
+          "支付"
+        ],
+        "priority": "P2",
+        "reqId": "LN-017",
+        "requirement": "req-sec",
+        "status": "status-pending",
+        "clarifyType": "clarify-QA",
+        "clarifyOrder": [
+          "D"
+        ],
+        "clarifyOwner": "产品"
+      },
+      {
+        "id": "diff-03",
+        "module": "m-订单管理",
+        "filePath": "src/main/java/com/carry/responsibility/StateMachine.java",
+        "changeType": "modified",
+        "linesAdded": 87,
+        "linesRemoved": 23,
+        "relatedIssue": "issue-008",
+        "commitSha": "c3d4e5f",
+        "visibleTo": [
+          "dev"
+        ],
+        "tags": [
+          "代码"
+        ],
+        "priority": "P2",
+        "reqId": "LN-018",
+        "requirement": "req-func",
+        "status": "status-pending",
+        "clarifyType": "clarify-QA",
+        "clarifyOrder": [
+          "D"
+        ],
+        "clarifyOwner": "产品"
+      }
+    ]
+  },
+  "gap": {
+    "total": 51,
+    "items": [
+      {
+        "id": "gap-02",
+        "module": "m-订单管理",
+        "prdRef": "PRD-5.4.2",
+        "expected": "状态机需支持还号换绑幂等校验",
+        "actual": "当前无幂等,可能重复处理",
+        "gapType": "missing_feature",
+        "owner": "开发TL",
+        "priority": "P0",
+        "visibleTo": [
+          "product",
+          "dev"
+        ],
+        "tags": [
+          "需求",
+          "阻塞"
+        ],
+        "reqId": "LN-001",
+        "requirement": "req-func",
+        "status": "status-pending",
+        "clarifyType": "clarify-GAP清单",
+        "clarifyOrder": [
+          "B"
+        ],
+        "clarifyOwner": "开发"
+      },
+      {
+        "id": "gap-03",
+        "module": "m-支付流程",
+        "prdRef": "PRD-7.1.3",
+        "expected": "多次部分退款应累计到原订单",
+        "actual": "当前单次退款会替换原记录",
+        "gapType": "inconsistent",
+        "owner": "开发TL",
+        "priority": "P0",
+        "visibleTo": [
+          "product",
+          "dev"
+        ],
+        "tags": [
+          "需求",
+          "支付"
+        ],
+        "reqId": "LN-002",
+        "requirement": "req-perf",
+        "status": "status-pending",
+        "clarifyType": "clarify-GAP清单",
+        "clarifyOrder": [
+          "B"
+        ],
+        "clarifyOwner": "开发"
+      },
+      {
+        "id": "gap-01",
+        "module": "m-客户服务",
+        "prdRef": "PRD-2.3.1",
+        "expected": "工单需支持批量转派",
+        "actual": "当前仅支持单条转派",
+        "gapType": "missing_feature",
+        "owner": "产品+开发",
+        "priority": "P1",
+        "visibleTo": [
+          "product",
+          "dev"
+        ],
+        "tags": [
+          "需求",
+          "GAP"
+        ],
+        "reqId": "LN-006",
+        "requirement": "req-func",
+        "status": "status-pending",
+        "clarifyType": "clarify-GAP清单",
+        "clarifyOrder": [
+          "C"
+        ],
+        "clarifyOwner": "产品"
+      }
+    ]
+  }
 }

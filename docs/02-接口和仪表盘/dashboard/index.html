@@ -4,825 +4,550 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Carry — 追责系统项目工作台</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/vue@3.4.38/dist/vue.global.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.0.6"></script>
 <style>
-:root{
-  --bg:#0f172a;--card:#1e293b;--border:#334155;
-  --text:#e2e8f0;--muted:#94a3b8;--dim:#64748b;
-  --blue:#3b82f6;--green:#34d399;--red:#ef4444;--amber:#f59e0b;
-  --purple:#a78bfa;--cyan:#22d3ee;--rose:#fb7185;--orange:#fb923c;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono','PingFang SC','Microsoft YaHei',monospace;font-size:13px;line-height:1.6}
-
-/* ========== HEADER ========== */
-.page-header{padding:16px;text-align:center;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#1e293b,var(--bg))}
-.page-header h1{font-size:18px;font-weight:700;color:#f8fafc}
-.page-header .meta{font-size:11px;color:var(--dim);margin-top:4px}
-
-/* 角色切换条 */
-.role-bar{margin-top:12px;display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
-.role-btn{padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(15,23,42,.6);color:#cbd5e1;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:4px}
-.role-btn:hover{border-color:var(--blue);color:#fff}
-.role-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.role-btn .icon{font-size:13px}
-
-/* 全局操作 */
-.page-tools{margin-top:10px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
-.page-tools a,.page-tools button{border:1px solid var(--border);background:rgba(15,23,42,.82);color:#cbd5e1;border-radius:8px;padding:6px 12px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none}
-.page-tools a:hover,.page-tools button:hover{border-color:var(--blue);color:#fff;background:var(--blue)}
-.page-tools button:disabled{opacity:.65;cursor:wait}
-
-/* ========== MAIN ========== */
-.main{max-width:1080px;margin:0 auto;padding:16px}
-
-/* ========== SECTION 1: 当前状态条 ========== */
-.status-bar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px}
-.status-bar .sb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px}
-.status-bar .sb-title{font-size:13px;font-weight:700;color:#f8fafc}
-.status-bar .sb-conclusion{font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px}
-.sb-cond{background:rgba(245,158,11,.15);color:var(--amber)}
-.sb-pass{background:rgba(52,211,153,.15);color:var(--green)}
-.sb-rej{background:rgba(239,68,68,.15);color:var(--red)}
-.status-bar .sb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.sb-cell{background:rgba(15,23,42,.6);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
-.sb-cell .label{font-size:10px;color:var(--muted);margin-bottom:4px}
-.sb-cell .nums{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
-.sb-cell .b{font-size:16px;font-weight:700;color:#f8fafc}
-.sb-cell .u{font-size:9px;color:var(--dim)}
-.sb-cell .p0 .b{color:#fca5a5}
-.sb-cell .p1 .b{color:#fcd34d}
-.sb-cell .p2 .b{color:#93c5fd}
-.sb-cell .ok .b{color:#6ee7b7}
-.sb-cell .warn .b{color:#fcd34d}
-.sb-cell .fail .b{color:#fca5a5}
-
-/* ========== SECTION 2: 阶段时间线 ========== */
-.timeline{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px}
-.timeline .tl-head{font-size:13px;font-weight:700;color:#f8fafc;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.timeline .tl-body{display:flex;flex-direction:column;gap:10px;position:relative;padding-left:14px}
-.timeline .tl-body::before{content:'';position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--border)}
-.tl-node{position:relative;padding-left:18px}
-.tl-node::before{content:'';position:absolute;left:-13px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--border)}
-.tl-node.now::before{border-color:var(--amber);background:var(--amber)}
-.tl-node.future::before{border-color:var(--green);background:var(--green)}
-.tl-node .tl-title{font-size:12px;font-weight:700;color:#f8fafc;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.tl-node .tl-meta{font-size:10px;color:var(--muted);margin-top:2px}
-.tl-node .tl-body-inner{margin-top:6px;font-size:11px;color:var(--text)}
-.tl-node ul{margin:4px 0 0 16px;list-style:none;padding:0}
-.tl-node li{margin:2px 0;font-size:11px;color:var(--text)}
-.tl-node li::before{content:'· ';color:var(--dim)}
-.tl-node .badge{font-size:9px;padding:1px 6px;border-radius:6px;font-weight:600}
-.tl-node .b-amber{background:rgba(245,158,11,.15);color:var(--amber)}
-.tl-node .b-green{background:rgba(52,211,153,.15);color:var(--green)}
-
-/* ========== SECTION 3: 我的待办 ========== */
-.sec-head{font-size:13px;font-weight:700;color:#f8fafc;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
-.sec-head .hint{font-size:10px;color:var(--muted);font-weight:400}
-.role-prompt{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--text)}
-.role-prompt b{color:var(--blue)}
-
-/* 卡片网格 */
-.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-.nav-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;display:block;position:relative;overflow:hidden;color:inherit;text-decoration:none}
-.nav-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
-.nav-card .nc-icon{font-size:20px;margin-bottom:6px;display:block}
-.nav-card .nc-title{font-size:13px;font-weight:700;color:#f8fafc;display:block;margin-bottom:4px}
-.nav-card .nc-desc{font-size:10px;color:var(--muted);display:block;line-height:1.5;margin-bottom:8px}
-.nav-card .nc-count{position:absolute;top:12px;right:12px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px}
-.nc-realtime{background:rgba(239,68,68,.15);color:var(--red)}
-.nc-weekly{background:rgba(245,158,11,.15);color:var(--amber)}
-.nc-quarterly{background:rgba(96,165,250,.15);color:#60a5fa}
-.nc-purple{background:rgba(139,92,246,.15);color:var(--purple)}
-.nc-cyan{background:rgba(34,211,238,.15);color:var(--cyan)}
-.nc-rose{background:rgba(251,113,133,.15);color:var(--rose)}
-.nav-card .nc-bar{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
-.nc-tag{font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(51,65,85,.5);color:var(--dim)}
-.nav-card .nc-actions{margin-top:8px;display:flex;gap:6px}
-.nc-action{padding:3px 8px;font-size:10px;font-weight:600;border:1px solid var(--border);border-radius:5px;background:rgba(15,23,42,.6);color:var(--blue);cursor:pointer;transition:all .15s;text-decoration:none;display:inline-block}
-.nc-action:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
-.nc-action.copied{background:var(--green);color:#000;border-color:var(--green)}
-.nc-action.disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
-
-/* ========== SECTION 4: 参考资料 ========== */
-.refs-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.ref-link{display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--card);border:1px solid var(--border);border-radius:8px;text-decoration:none;color:inherit;transition:all .15s;font-size:11px;font-weight:600}
-.ref-link:hover{border-color:var(--blue);color:#fff}
-.ref-link .icon{font-size:14px}
-.ref-link .total{font-size:9px;color:var(--dim);margin-left:auto}
-.ref-link.pending{opacity:.5;cursor:not-allowed;border-style:dashed}
-.ref-link.pending:hover{border-color:var(--border);color:inherit}
-.ref-link .planned{font-size:8px;color:var(--amber);background:rgba(245,158,11,.12);padding:1px 5px;border-radius:4px;margin-left:auto;font-weight:600;letter-spacing:.3px}
-
-/* ========== TAG 标签筛选器 ========== */
-.tag-filter{margin-top:10px;display:flex;justify-content:center;gap:5px;flex-wrap:wrap;padding:0 12px}
-.tag-chip{padding:4px 10px;border:1px solid var(--border);border-radius:14px;background:rgba(15,23,42,.6);color:var(--muted);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:3px}
-.tag-chip:hover{border-color:var(--blue);color:#fff}
-.tag-chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.tag-chip .x{font-size:11px;opacity:.6;margin-left:2px;line-height:1}
-.tag-clear{padding:4px 10px;border:1px dashed var(--border);border-radius:14px;background:transparent;color:var(--dim);font-family:inherit;font-size:10px;cursor:pointer;transition:all .15s}
-.tag-clear:hover{color:var(--red);border-color:var(--red)}
-
-/* Tag 配色(卡片内 chips) */
-.t-评审{background:rgba(96,165,250,.12);color:#60a5fa}
-.t-阻塞{background:rgba(239,68,68,.15);color:#fca5a5}
-.t-客户协作{background:rgba(251,113,133,.15);color:var(--rose)}
-.t-代码{background:rgba(34,211,238,.15);color:var(--cyan)}
-.t-需求{background:rgba(139,92,246,.15);color:var(--purple)}
-.t-支付{background:rgba(245,158,11,.15);color:#fcd34d}
-.t-权限{background:rgba(52,211,153,.15);color:#6ee7b7}
-.t-签字{background:rgba(251,146,60,.15);color:var(--orange)}
-.t-参考资料{background:rgba(100,116,139,.18);color:var(--muted)}
-
-/* 澄清顺序 4 级标签 */
-.t-A{background:rgba(239,68,68,.22);color:#fca5a5;border:1px solid rgba(239,68,68,.4);font-weight:700}
-.t-B{background:rgba(245,158,11,.18);color:#fcd34d;border:1px solid rgba(245,158,11,.4);font-weight:700}
-.t-C{background:rgba(96,165,250,.15);color:#93c5fd;border:1px solid rgba(96,165,250,.4);font-weight:700}
-.t-D{background:rgba(100,116,139,.18);color:var(--muted);border:1px solid rgba(100,116,139,.4);font-weight:700}
-.order-filter-label{font-size:10px;color:var(--muted);font-weight:600;margin-right:4px;display:inline-flex;align-items:center}
-
-/* 优先级徽章 */
-.nc-priority{position:absolute;top:12px;left:12px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.4px}
-.nc-priority.p0{background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid rgba(239,68,68,.4)}
-.nc-priority.p1{background:rgba(245,158,11,.18);color:#fcd34d;border:1px solid rgba(245,158,11,.4)}
-.nc-priority.p2{background:rgba(96,165,250,.15);color:#93c5fd;border:1px solid rgba(96,165,250,.4)}
-.nc-priority.p3{background:rgba(100,116,139,.18);color:var(--muted);border:1px solid rgba(100,116,139,.4)}
-
-.nc-reqid{font-size:9px;color:var(--cyan);font-family:'JetBrains Mono',monospace;font-weight:600;margin-right:4px}
-
-/* ========== DETAIL VIEW ========== */
-#detail-view{display:none}
-.back-btn{padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;margin-bottom:12px}
-.back-btn:hover{border-color:var(--blue);color:var(--blue)}
-.sec-title{font-size:15px;font-weight:700;color:#f8fafc;margin-bottom:12px;padding-left:8px;border-left:3px solid var(--blue)}
-.sec-desc{font-size:11px;color:var(--dim);margin-bottom:10px}
-table{width:100%;border-collapse:collapse;font-size:11px;background:var(--card);border-radius:8px;overflow:hidden;margin-top:4px}
-th{background:rgba(51,65,85,.5);padding:6px 8px;text-align:left;font-weight:600;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
-td{padding:5px 8px;border-top:1px solid var(--border);vertical-align:top}
-tr:hover td{background:rgba(51,65,85,.2)}
-.badge{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600}
-.b-ok{background:rgba(52,211,153,.15);color:var(--green)}
-.b-p0{background:rgba(239,68,68,.15);color:var(--red)}
-.b-p1{background:rgba(245,158,11,.15);color:var(--amber)}
-.b-pending{background:rgba(251,113,133,.15);color:var(--rose)}
-.b-waiting{background:rgba(245,158,11,.15);color:var(--amber)}
-.b-blocked{background:rgba(239,68,68,.15);color:var(--red)}
-.b-confirmed{background:rgba(52,211,153,.15);color:var(--green)}
-
-/* ========== FOOTER ========== */
-.footer{text-align:center;padding:16px;font-size:10px;color:var(--dim);border-top:1px solid var(--border);margin-top:14px}
-.footer .ft-row{margin:2px 0}
-.footer .ft-label{color:var(--muted)}
-
-/* ========== LOADING/ERROR ========== */
-.loading{padding:30px;text-align:center;color:var(--muted);font-size:11px}
-.error-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px;margin-bottom:10px}
-.error-box h4{color:var(--red);font-size:13px;margin-bottom:4px}
-.error-box p{font-size:11px;color:var(--muted)}
-.empty-msg{padding:20px;text-align:center;color:var(--dim);font-size:11px;background:var(--card);border:1px dashed var(--border);border-radius:8px}
-
-/* ========== ANIMATION ========== */
-#detail-view.fade-in{animation:fadeSlideIn .3s ease both}
-@keyframes fadeSlideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-
-/* ========== RESPONSIVE ========== */
-@media(max-width:880px){
-  .card-grid{grid-template-columns:1fr 1fr}
-  .refs-bar{grid-template-columns:1fr 1fr}
-  .status-bar .sb-grid{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:520px){
-  .card-grid{grid-template-columns:1fr}
-  .refs-bar{grid-template-columns:1fr}
-  .role-btn{font-size:10px;padding:5px 8px}
-}
+  /* 仅保留最小初始化 + 字体 */
+  body { font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif; background:#0f172a; color:#e2e8f0; }
+  [v-cloak] { display: none; }
+  ::selection { background: rgba(59,130,246,.4); }
 </style>
 </head>
-<body>
+<body class="min-h-screen text-slate-200">
 
-<div class="page-header">
-<h1>Carry — 追责系统项目工作台</h1>
-<p class="meta">当前阶段:<b id="meta-stage">加载中…</b> · 最近更新 <b id="meta-updated">--</b></p>
-<div class="role-bar" id="role-bar">
-  <button class="role-btn" data-role="boss">👔 老板</button>
-  <button class="role-btn" data-role="product">📋 产品</button>
-  <button class="role-btn" data-role="dev">👨‍💻 开发</button>
-  <button class="role-btn" data-role="customer_success">🤝 客户经理</button>
-  <button class="role-btn" data-role="newcomer">🆕 新人</button>
-</div>
-<div class="tag-filter" id="tag-filter">
-  <button class="tag-clear" onclick="clearTags()">✕ 清空筛选</button>
-</div>
-<div class="tag-filter" id="order-filter">
-  <span class="order-filter-label">澄清顺序:</span>
-  <button class="tag-chip t-A" data-order="A">A 文档阻断</button>
-  <button class="tag-chip t-B" data-order="B">B 流程阻断</button>
-  <button class="tag-chip t-C" data-order="C">C 范围明确</button>
-  <button class="tag-chip t-D" data-order="D">D 体验细节</button>
-</div>
-<div class="page-tools">
-  <button onclick="exportPDF(this)">导出工作台 PDF</button>
-  <a href="v1.0-review-2026-07-30.html">最新评审详情 →</a>
-  <a href="md-viewer.html">MD 预览</a>
-  <a href="../../index.html">返回文档中心</a>
-</div>
-</div>
+<div id="app" v-cloak>
 
-<div class="main">
+<!-- HEADER -->
+<header class="border-b border-slate-700 bg-gradient-to-b from-slate-800 to-slate-900 px-4 py-4 text-center">
+  <h1 class="text-lg font-bold text-slate-50">Carry — 追责系统项目工作台</h1>
+  <p class="text-[11px] text-slate-500 mt-1">
+    当前阶段:<b class="text-slate-300">{{ dashboard?.version || '...' }} 评审闭环</b>
+    · 最近更新 <b class="text-slate-300">{{ dashboard?.reviewDate || '--' }}</b>
+  </p>
 
-<!-- SECTION 1: 当前状态条 -->
-<div class="status-bar" id="status-bar">
-  <div class="sb-head">
-    <div class="sb-title">🚦 当前状态 · 评审闭环进度</div>
-    <div class="sb-conclusion" id="sb-conclusion">加载中…</div>
+  <!-- 角色切换 -->
+  <div class="mt-3 flex flex-wrap justify-center gap-1.5">
+    <button v-for="r in roles" :key="r.key"
+      @click="switchRole(r.key)"
+      :class="['px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all',
+               currentRole === r.key
+                 ? 'bg-blue-500 border-blue-500 text-white'
+                 : 'bg-slate-900/60 border-slate-700 text-slate-300 hover:border-blue-500 hover:text-white']">
+      {{ r.icon }} {{ r.label }}
+    </button>
   </div>
-  <div class="sb-grid" id="sb-grid">
-    <div class="sb-cell"><div class="label">门禁</div><div class="nums"><span class="b ok" id="sb-gate-pass">-</span><span class="u">✅</span><span class="b warn" id="sb-gate-warn">-</span><span class="u">⚠️</span><span class="b fail" id="sb-gate-fail">-</span><span class="u">❌</span></div></div>
-    <div class="sb-cell"><div class="label">评审计数</div><div class="nums"><span class="b p0" id="sb-p0">-</span><span class="u">P0</span><span class="b p1" id="sb-p1">-</span><span class="u">P1</span><span class="b p2" id="sb-open">-</span><span class="u">Open</span></div></div>
-    <div class="sb-cell"><div class="label">协作待办</div><div class="nums"><span class="b" id="sb-feedback">-</span><span class="u">评论</span><span class="b" id="sb-questions">-</span><span class="u">问题</span><span class="b" id="sb-deps">-</span><span class="u">依赖</span></div></div>
-    <div class="sb-cell"><div class="label">代码侧</div><div class="nums"><span class="b" id="sb-blockers">-</span><span class="u">阻塞</span><span class="b" id="sb-diff">-</span><span class="u">差异</span><span class="b" id="sb-gap">-</span><span class="u">GAP</span></div></div>
+
+  <!-- 业务标签筛选 -->
+  <div class="mt-3 flex flex-wrap justify-center gap-1.5 px-3">
+    <button v-for="t in allTags" :key="t"
+      @click="toggleTag(t)"
+      :class="['px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all inline-flex items-center gap-1',
+               activeTags.includes(t)
+                 ? 'bg-blue-500 border-blue-500 text-white'
+                 : 'bg-slate-900/60 border-slate-700 text-slate-400 hover:border-blue-500 hover:text-white']">
+      <span :class="['w-1.5 h-1.5 rounded-full', tagDotColor(t)]"></span>
+      {{ t }}
+      <span v-if="activeTags.includes(t)" class="opacity-60">×</span>
+    </button>
+    <button v-if="activeTags.length" @click="clearTags"
+      class="px-2.5 py-1 rounded-full text-[10px] border border-dashed border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-400">
+      ✕ 清空筛选
+    </button>
   </div>
-</div>
 
-<!-- SECTION 2: 阶段时间线 -->
-<div class="timeline">
-  <div class="tl-head">🕒 阶段时间线 <span class="hint" style="font-size:10px;color:var(--muted);font-weight:400">过去 → 现在 → 未来</span></div>
-  <div class="tl-body" id="tl-body">
-    <div class="tl-node">
-      <div class="tl-title">📦 已归档 · V0.x</div>
-      <div class="tl-meta">立项 / 初版 PRD / 历史评审</div>
+  <!-- 澄清顺序筛选 -->
+  <div class="mt-2 flex flex-wrap justify-center gap-1.5 px-3">
+    <span class="text-[10px] text-slate-500 font-semibold inline-flex items-center">澄清顺序:</span>
+    <button v-for="o in orderLevels" :key="o.key"
+      @click="toggleOrder(o.key)"
+      :class="['px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all',
+               activeOrders.includes(o.key)
+                 ? 'shadow-[0_0_0_2px_rgb(59,130,246)] ' + o.activeClass
+                 : o.idleClass]">
+      {{ o.key }} {{ o.label }}
+      <span v-if="activeOrders.includes(o.key)" class="opacity-60">×</span>
+    </button>
+    <button v-if="activeOrders.length" @click="clearOrders"
+      class="px-2.5 py-1 rounded-full text-[10px] border border-dashed border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-400">
+      ✕ 清空
+    </button>
+  </div>
+
+  <!-- 全局操作 -->
+  <div class="mt-3 flex flex-wrap justify-center gap-2">
+    <button class="px-3 py-1.5 border border-slate-700 bg-slate-900/80 rounded-lg text-xs font-semibold text-slate-300 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all">
+      导出工作台 PDF
+    </button>
+    <a href="v1.0-review-2026-07-30.html" class="px-3 py-1.5 border border-slate-700 bg-slate-900/80 rounded-lg text-xs font-semibold text-slate-300 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all no-underline">
+      最新评审详情 →
+    </a>
+    <a href="md-viewer.html" class="px-3 py-1.5 border border-slate-700 bg-slate-900/80 rounded-lg text-xs font-semibold text-slate-300 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all no-underline">
+      MD 预览
+    </a>
+    <a href="../../index.html" class="px-3 py-1.5 border border-slate-700 bg-slate-900/80 rounded-lg text-xs font-semibold text-slate-300 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all no-underline">
+      返回文档中心
+    </a>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 py-4">
+
+  <!-- 状态条 -->
+  <div class="bg-slate-800 border border-slate-700 rounded-xl p-3.5 mb-4">
+    <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+      <div class="text-[13px] font-bold text-slate-50">🚦 当前状态 · 评审闭环进度</div>
+      <div :class="['text-[11px] font-bold px-2.5 py-1 rounded-md', conclusionClass]">
+        {{ dashboard?.conclusionLabel || '加载中…' }}
+      </div>
     </div>
-    <div class="tl-node now" id="tl-now">
-      <div class="tl-title">📌 现在 · <span id="tl-now-version">--</span> 评审 <span class="badge b-amber" id="tl-now-badge">--</span></div>
-      <div class="tl-meta" id="tl-now-meta">--</div>
-      <div class="tl-body-inner" id="tl-now-remediation"></div>
-    </div>
-    <div class="tl-node future">
-      <div class="tl-title">🎯 未来里程碑</div>
-      <div class="tl-meta">V1.6 → V1.7 → V2.0</div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+      <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-2">
+        <div class="text-[10px] text-slate-400 mb-1">门禁</div>
+        <div class="flex items-baseline gap-1.5 flex-wrap text-base font-bold">
+          <span class="text-emerald-300">{{ dashboard?.totals?.gates?.pass || 0 }}</span><span class="text-[9px] text-slate-500">✅</span>
+          <span class="text-amber-300">{{ dashboard?.totals?.gates?.warn || 0 }}</span><span class="text-[9px] text-slate-500">⚠️</span>
+          <span class="text-red-300">{{ dashboard?.totals?.gates?.fail || 0 }}</span><span class="text-[9px] text-slate-500">❌</span>
+        </div>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-2">
+        <div class="text-[10px] text-slate-400 mb-1">评审计数</div>
+        <div class="flex items-baseline gap-1.5 flex-wrap text-base font-bold">
+          <span class="text-red-300">{{ dashboard?.totals?.p0 || 0 }}</span><span class="text-[9px] text-slate-500">P0</span>
+          <span class="text-amber-300">{{ dashboard?.totals?.p1 || 0 }}</span><span class="text-[9px] text-slate-500">P1</span>
+          <span class="text-blue-300">{{ dashboard?.totals?.open || 0 }}</span><span class="text-[9px] text-slate-500">Open</span>
+        </div>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-2">
+        <div class="text-[10px] text-slate-400 mb-1">协作待办</div>
+        <div class="flex items-baseline gap-1.5 flex-wrap text-base font-bold">
+          <span class="text-slate-50">{{ data?.feedback?.total || 0 }}</span><span class="text-[9px] text-slate-500">评论</span>
+          <span class="text-slate-50">{{ data?.questions?.total || 0 }}</span><span class="text-[9px] text-slate-500">问题</span>
+          <span class="text-slate-50">{{ data?.deps?.total || 0 }}</span><span class="text-[9px] text-slate-500">依赖</span>
+        </div>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-2">
+        <div class="text-[10px] text-slate-400 mb-1">代码侧</div>
+        <div class="flex items-baseline gap-1.5 flex-wrap text-base font-bold">
+          <span class="text-slate-50">{{ data?.blockers?.total || 0 }}</span><span class="text-[9px] text-slate-500">阻塞</span>
+          <span class="text-slate-50">{{ data?.diff?.total || 0 }}</span><span class="text-[9px] text-slate-500">差异</span>
+          <span class="text-slate-50">{{ data?.gap?.total || 0 }}</span><span class="text-[9px] text-slate-500">GAP</span>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- SECTION 3: 我的待办 -->
-<div class="sec-head">⭐ 我的待办 <span class="hint" id="sec3-hint">按当前角色过滤</span></div>
-<div class="role-prompt" id="role-prompt">加载中…</div>
-<div class="card-grid" id="card-grid">
-  <div class="loading">数据加载中…</div>
-</div>
+  <!-- 时间线 -->
+  <div class="bg-slate-800 border border-slate-700 rounded-xl p-3.5 mb-4">
+    <div class="text-[13px] font-bold text-slate-50 mb-2.5 flex items-center gap-1.5">
+      🕒 阶段时间线 <span class="text-[10px] text-slate-400 font-normal">过去 → 现在 → 未来</span>
+    </div>
+    <div class="relative pl-3.5 flex flex-col gap-2.5">
+      <div class="absolute top-1.5 bottom-1.5 left-[7px] w-0.5 bg-slate-700"></div>
+      <div class="relative pl-4.5">
+        <div class="absolute -left-3.5 top-1.5 w-3 h-3 rounded-full bg-slate-900 border-2 border-slate-700"></div>
+        <div class="text-[12px] font-bold text-slate-50">📦 已归档 · V0.x</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">立项 / 初版 PRD / 历史评审</div>
+      </div>
+      <div class="relative pl-4.5">
+        <div class="absolute -left-3.5 top-1.5 w-3 h-3 rounded-full bg-amber-500 border-2 border-amber-500"></div>
+        <div class="text-[12px] font-bold text-slate-50 flex items-center gap-1.5 flex-wrap">
+          📌 现在 · {{ dashboard?.version || '--' }} 评审
+          <span class="text-[9px] px-1.5 py-0.5 rounded-md font-bold bg-amber-500/15 text-amber-300">
+            {{ dashboard?.conclusionLabel || '--' }}
+          </span>
+        </div>
+        <div class="text-[10px] text-slate-400 mt-0.5">
+          {{ dashboard?.reviewDate || '--' }} ·
+          门禁 {{ dashboard?.totals?.gates?.total || 0 }} (0✅/{{ dashboard?.totals?.gates?.warn || 0 }}⚠️/{{ dashboard?.totals?.gates?.fail || 0 }}❌) ·
+          {{ dashboard?.totals?.p0 || 0 }} P0 · {{ dashboard?.totals?.p1 || 0 }} P1 ·
+          {{ dashboard?.totals?.open || 0 }} Open
+        </div>
+        <ul class="mt-1.5 ml-4 list-none">
+          <li v-for="(p, i) in dashboard?.remediationPlan || []" :key="i" class="text-[11px] text-slate-200 my-0.5">
+            <span class="text-slate-500">·</span> <b>{{ p.deadline }}:</b> {{ p.items.join(' / ') }}
+          </li>
+        </ul>
+      </div>
+      <div class="relative pl-4.5">
+        <div class="absolute -left-3.5 top-1.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-emerald-500"></div>
+        <div class="text-[12px] font-bold text-slate-50">🎯 未来里程碑</div>
+        <div class="text-[10px] text-slate-400 mt-0.5">V1.6 → V1.7 → V2.0</div>
+      </div>
+    </div>
+  </div>
 
-<!-- SECTION 4: 参考资料 -->
-<div class="sec-head">📚 参考资料 <span class="hint">全角色通用</span></div>
-<div class="refs-bar" id="refs-bar">
-  <div class="loading">加载中…</div>
-</div>
+  <!-- SECTION 3: 我的待办 -->
+  <div class="text-[13px] font-bold text-slate-50 mt-3.5 mb-2 pb-1.5 border-b border-slate-700 flex items-center gap-1.5">
+    ⭐ 我的待办
+    <span class="text-[10px] text-slate-400 font-normal">
+      当前角色:{{ roleLabel(currentRole) }} · 显示 {{ visibleCards.length }} 张
+    </span>
+  </div>
 
-</div>
+  <div class="bg-blue-500/10 border border-blue-500/30 border-l-4 border-l-blue-500 rounded-md px-3 py-2.5 mb-2.5 text-[11px] text-slate-200">
+    <b class="text-blue-300">{{ roleLabel(currentRole) }} 视角:</b> {{ rolePrompt }}
+  </div>
 
-<!-- DETAIL VIEW -->
-<div class="main">
-<div id="detail-view">
-  <button class="back-btn" onclick="showGrid()">← 返回工作台</button>
-  <div id="detail-content"></div>
-</div>
-</div>
+  <div class="bg-blue-500/5 border border-blue-500/20 border-l-4 border-l-blue-500 rounded-md px-3.5 py-2.5 mb-2.5 text-[11px] text-slate-200 leading-relaxed">
+    <b class="text-blue-300">汇总</b> · 当前角色 [<b class="text-blue-300">{{ roleLabel(currentRole) }}</b>] 可见
+    <b class="text-slate-50">{{ visibleCards.length }}</b> / {{ design?.cardMeta?.length || 0 }} 张卡 · 总待澄清
+    <b class="text-slate-50">{{ totalFiltered }}</b> 项<br>
+    <span class="text-slate-400">{{ cardSummary }}</span>
+  </div>
 
-<div class="footer">
-  <div class="ft-row"><span class="ft-label">工作台维护</span> 产品组 · <span class="ft-label">数据更新</span> 每周一同步</div>
-  <div class="ft-row"><span class="ft-label">数据层</span> <code>data/*.json</code> · <span class="ft-label">渲染层</span> <code>index.html</code> (无业务硬编码)</div>
-  <div class="ft-row">Carry V1.0 工作台 · 评审日期 <span id="footer-date">--</span></div>
+  <div class="bg-slate-700/30 border border-dashed border-slate-700 rounded-md px-3.5 py-2 mb-3.5 text-[10px] text-slate-400 leading-relaxed">
+    <b class="text-cyan-400">过滤</b> · 阻断与风险 [澄清级别: A/B/C 组合筛选] · 关注角色: {{ roleLabel(currentRole) }} · 状态: 待澄清 / 已回复 / 已解决
+    <span v-if="activeTags.length || activeOrders.length">
+      · 当前过滤:
+      <span v-if="activeTags.length" class="text-blue-300 ml-1">标签</span>
+      <span v-for="t in activeTags" :key="t" :class="['px-1.5 py-0.5 rounded text-[9px] mx-0.5', tagColor(t)]">{{ t }}</span>
+      <span v-if="activeOrders.length" class="text-blue-300 ml-1">级别</span>
+      <span v-for="o in activeOrders" :key="o" :class="['px-1.5 py-0.5 rounded text-[9px] mx-0.5 font-bold border', orderColor(o)]">{{ o }}</span>
+    </span>
+  </div>
+
+  <!-- 加载中 -->
+  <div v-if="loading" class="text-center py-8 text-slate-400 text-[11px]">数据加载中…</div>
+
+  <!-- 错误 -->
+  <div v-else-if="loadError" class="bg-red-500/10 border border-red-500/30 rounded-md p-3 mb-2.5">
+    <h4 class="text-red-300 text-[13px] mb-1">数据加载失败</h4>
+    <p class="text-[11px] text-slate-400">{{ loadError }}</p>
+  </div>
+
+  <!-- 文档流式布局: 章节 + 列表条目 -->
+  <div v-else-if="visibleCards.length" class="flex flex-col gap-4 mb-3.5">
+    <section v-for="meta in visibleCards" :key="meta.id"
+      :data-card-id="meta.id"
+      class="bg-slate-800 border border-slate-700 rounded-lg p-3.5">
+      <div class="flex items-baseline justify-between mb-2 pb-1.5 border-b border-dashed border-slate-700 flex-wrap gap-1.5">
+        <h3 class="text-[13px] font-bold text-slate-50 m-0 flex items-center gap-1.5">
+          {{ meta.icon }} {{ cardLabel(meta) }}
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-900/60 text-slate-400">
+            {{ getData(meta.id).total || 0 }} 项
+          </span>
+        </h3>
+        <span class="text-[10px] text-slate-500 font-normal">
+          更新于 {{ dashboard?.reviewDate || '--' }}
+        </span>
+      </div>
+
+      <div v-if="(getData(meta.id).items || []).length === 0"
+        class="py-5 text-center text-slate-500 text-[11px] italic">
+        暂无明细数据(总计 {{ getData(meta.id).total || 0 }} 项 seed 未展开)
+      </div>
+
+      <div v-else class="divide-y divide-slate-700/40">
+        <div v-for="item in getData(meta.id).items" :key="item.reqId || item.id"
+          class="py-2.5">
+          <div class="flex items-baseline gap-1.5 flex-wrap text-[12px] text-slate-200 leading-relaxed">
+            <span class="text-cyan-400 font-semibold text-[11px] flex-shrink-0">问题:</span>
+            <span v-if="item.reqId"
+              class="font-mono text-[9px] text-cyan-400 bg-cyan-400/10 px-1.5 py-0.5 rounded font-semibold flex-shrink-0">
+              {{ item.reqId }}
+            </span>
+            <span class="text-slate-50 flex-1 min-w-0">{{ item.content || item.question || item.name || item.title || '(无内容)' }}</span>
+          </div>
+          <div class="mt-1.5 text-[10px] text-slate-400 flex items-center gap-1 flex-wrap">
+            <span class="text-slate-500">标签:</span>
+            <span v-if="item.priority" :class="priorityBadgeClass(item.priority)">{{ item.priority }}</span>
+            <span v-for="o in (item.clarifyOrder || [])" :key="o"
+              :class="['px-1.5 py-0.5 rounded text-[9px] font-bold border', orderColor(o)]">{{ o }}</span>
+            <span v-for="t in (item.tags || [])" :key="t"
+              :class="['px-1.5 py-0.5 rounded text-[9px]', tagColor(t)]">{{ t }}</span>
+            <span v-if="item.module" class="px-1.5 py-0.5 rounded text-[9px] bg-cyan-400/10 text-cyan-400">{{ item.module }}</span>
+            <span v-if="item.clarifyType" class="px-1.5 py-0.5 rounded text-[9px] bg-purple-400/10 text-purple-400">{{ item.clarifyType }}</span>
+            <span v-if="item.clarifyOwner" class="px-1.5 py-0.5 rounded text-[9px] bg-cyan-400/10 text-cyan-400">{{ item.clarifyOwner }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="meta.actions && meta.actions.includes('copy') && (getData(meta.id).items || []).length"
+        class="mt-2.5 flex gap-1.5 flex-wrap">
+        <button @click="copyCard(meta.id, $event)"
+          :data-card="meta.id"
+          class="px-2 py-1 text-[10px] font-semibold border border-slate-700 rounded bg-slate-900/60 text-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all">
+          📋 一键复制
+        </button>
+      </div>
+      <div v-if="meta.actions && meta.actions.includes('detail') && meta.externalLink"
+        class="mt-2.5 flex gap-1.5 flex-wrap">
+        <a :href="meta.externalLink"
+          class="px-2 py-1 text-[10px] font-semibold border border-slate-700 rounded bg-slate-900/60 text-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all no-underline">
+          → 详情
+        </a>
+      </div>
+    </section>
+  </div>
+
+  <!-- 空状态 -->
+  <div v-else class="border border-dashed border-slate-700 rounded-md p-5 text-center text-slate-500 text-[11px]">
+    <template v-if="activeTags.length || activeOrders.length">
+      当前角色 + [{{ filterDesc }}] 无可见子项
+    </template>
+    <template v-else>当前角色无可见子项,请切换角色</template>
+  </div>
+
+  <!-- SECTION 4: 参考资料 -->
+  <div class="text-[13px] font-bold text-slate-50 mt-3.5 mb-2 pb-1.5 border-b border-slate-700 flex items-center gap-1.5">
+    📚 参考资料 <span class="text-[10px] text-slate-400 font-normal">全角色通用</span>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3.5">
+    <a v-for="r in refsItems" :key="r.title" :href="r.data.link || '#'"
+      :class="['flex items-center gap-1.5 px-3 py-2.5 bg-slate-800 border rounded-lg text-[11px] font-semibold no-underline transition-all',
+               r.data.status === 'pending'
+                 ? 'border-dashed border-slate-700 opacity-50 cursor-not-allowed'
+                 : 'border-slate-700 hover:border-blue-500 hover:text-white text-slate-200']"
+      :title="r.data.status === 'pending' ? '待产出 · 预计 ' + r.data.plannedFor : ''">
+      <span class="text-[14px]">{{ r.icon }}</span>
+      <span class="flex-1">{{ r.data.title }}</span>
+      <span v-if="r.data.status === 'pending'"
+        class="text-[8px] text-amber-300 bg-amber-500/15 px-1.5 py-0.5 rounded font-semibold tracking-wide">
+        {{ r.data.plannedFor }} 待产出
+      </span>
+      <span v-else-if="r.total" class="text-[9px] text-slate-500 ml-auto">{{ r.total }}</span>
+    </a>
+  </div>
+
+</main>
+
+<footer class="text-center py-4 text-[10px] text-slate-500 border-t border-slate-700 mt-3.5">
+  <div><span class="text-slate-400">工作台维护</span> 产品组 · <span class="text-slate-400">数据更新</span> 每周一同步</div>
+  <div><span class="text-slate-400">数据层</span> <code class="text-slate-400">data/*.json</code> · <span class="text-slate-400">渲染层</span> <code class="text-slate-400">Vue3 + Tailwind</code> 单 HTML</div>
+  <div>Carry {{ dashboard?.version || '...' }} 工作台 · 评审日期 {{ dashboard?.reviewDate || '--' }}</div>
+</footer>
+
 </div>
 
 <script>
-/* ================================================================
-   状态管理
-   ================================================================ */
-const STATE = {
-  currentRole: localStorage.getItem('carry.role') || 'product',
-  activeTags: JSON.parse(localStorage.getItem('carry.tags') || '[]'),
-  activeOrders: JSON.parse(localStorage.getItem('carry.orders') || '[]'),
-  data: {},
-  meta: {},
-  cardRegistry: [],
-  allTags: []
-};
+const { createApp, ref, computed, onMounted, watch } = Vue;
 
-const ROLE_PROMPTS = {
-  boss:            '3 个 P0 阻塞开发 / 5 个签字栏空缺 / 整体进度需关注',
-  product:         '11 个 Open 问题需关闭 / 22 项需推动 / 评审整改路径跟进',
-  dev:             '3 个阻塞项 + 17 个代码差异 + 51 个 GAP,优先关阻塞',
-  customer_success:'26 评论 + 35 问题 + 15 依赖,均可一键复制到钉钉',
-  newcomer:        '先读:技术架构 / 核心流程 / 模块下钻,熟悉后再介入业务'
-};
+createApp({
+  setup() {
+    const dashboard = ref(null);
+    const review = ref(null);
+    const design = ref(null);
+    const loading = ref(true);
+    const loadError = ref('');
 
-/* ================================================================
-   数据加载
-   ================================================================ */
-async function loadAll() {
-  try {
-    const [review, feedback, questions, deps, blockers, diff, gap, refs, cards] = await Promise.all([
-      fetchJSON('data/review-v1.0.json'),
-      fetchJSON('data/feedback.json'),
-      fetchJSON('data/questions.json'),
-      fetchJSON('data/external-deps.json'),
-      fetchJSON('data/blockers.json'),
-      fetchJSON('data/code-diff.json'),
-      fetchJSON('data/gap.json'),
-      fetchJSON('data/refs.json'),
-      fetchJSON('data/cards-meta.json')
-    ]);
-    STATE.data = { review, feedback, questions, deps, blockers, diff, gap, refs };
-    STATE.cardRegistry = cards.cards;
-    STATE.allTags = cards.tags || [];
-    STATE.meta = review;
-    renderAll();
-  } catch (err) {
-    document.getElementById('card-grid').innerHTML =
-      '<div class="error-box"><h4>数据加载失败</h4><p>' + (err.message || err) + '</p></div>';
-    console.error(err);
-  }
-}
+    const currentRole = ref(localStorage.getItem('carry.role') || 'product');
+    const activeTags = ref(JSON.parse(localStorage.getItem('carry.tags') || '[]'));
+    const activeOrders = ref(JSON.parse(localStorage.getItem('carry.orders') || '[]'));
 
-async function fetchJSON(path) {
-  const r = await fetch(path + '?t=' + Date.now());
-  if (!r.ok) throw new Error('加载 ' + path + ' 失败 (' + r.status + ')');
-  return await r.json();
-}
+    const roles = [
+      { key: 'boss',            icon: '👔', label: '老板' },
+      { key: 'product',         icon: '📋', label: '产品' },
+      { key: 'dev',             icon: '👨‍💻', label: '开发' },
+      { key: 'customer_success',icon: '🤝', label: '客户经理' },
+      { key: 'newcomer',        icon: '🆕', label: '新人' }
+    ];
 
-/* ================================================================
-   渲染
-   ================================================================ */
-function renderAll() {
-  renderRoleBar();
-  renderTagFilter();
-  renderOrderFilter();
-  renderStatusBar();
-  renderTimeline();
-  renderRolePrompt();
-  renderCards();
-  renderRefs();
-  renderFooter();
-}
+    const orderLevels = [
+      { key: 'A', label: '文档阻断', activeClass: 'bg-red-500/30 border-red-500/60 text-red-300', idleClass: 'bg-red-500/15 border-red-500/40 text-red-300 hover:border-red-500' },
+      { key: 'B', label: '流程阻断', activeClass: 'bg-amber-500/30 border-amber-500/60 text-amber-300', idleClass: 'bg-amber-500/15 border-amber-500/40 text-amber-300 hover:border-amber-500' },
+      { key: 'C', label: '范围明确', activeClass: 'bg-blue-500/30 border-blue-500/60 text-blue-300', idleClass: 'bg-blue-500/15 border-blue-500/40 text-blue-300 hover:border-blue-500' },
+      { key: 'D', label: '体验细节', activeClass: 'bg-slate-700/40 border-slate-700/60 text-slate-300', idleClass: 'bg-slate-700/30 border-slate-700/40 text-slate-400 hover:border-slate-700' }
+    ];
 
-function renderRoleBar() {
-  document.querySelectorAll('.role-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.role === STATE.currentRole);
-    btn.onclick = () => switchRole(btn.dataset.role);
-  });
-}
-
-function switchRole(role) {
-  STATE.currentRole = role;
-  localStorage.setItem('carry.role', role);
-  renderRoleBar();
-  renderRolePrompt();
-  renderCards();
-}
-
-/* 标签筛选(多选 OR) */
-function toggleTag(tag) {
-  const i = STATE.activeTags.indexOf(tag);
-  if (i >= 0) STATE.activeTags.splice(i, 1);
-  else STATE.activeTags.push(tag);
-  localStorage.setItem('carry.tags', JSON.stringify(STATE.activeTags));
-  renderTagFilter();
-  renderCards();
-}
-
-function clearTags() {
-  STATE.activeTags = [];
-  localStorage.setItem('carry.tags', JSON.stringify(STATE.activeTags));
-  renderTagFilter();
-  renderCards();
-}
-
-function renderTagFilter() {
-  const bar = document.getElementById('tag-filter');
-  if (!bar) return;
-  const chips = STATE.allTags.map(t => {
-    const active = STATE.activeTags.includes(t);
-    return '<button class="tag-chip' + (active ? ' active' : '') + '" onclick="toggleTag(\'' + t + '\')">' +
-           '<span class="t-dot t-' + t + '" style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block"></span>' +
-           escapeHtml(t) +
-           (active ? ' <span class="x">×</span>' : '') +
-           '</button>';
-  }).join('');
-  bar.innerHTML = chips + (STATE.activeTags.length
-    ? '<button class="tag-clear" onclick="clearTags()">✕ 清空筛选</button>'
-    : '');
-}
-
-function toggleOrder(order) {
-  const i = STATE.activeOrders.indexOf(order);
-  if (i >= 0) STATE.activeOrders.splice(i, 1);
-  else STATE.activeOrders.push(order);
-  localStorage.setItem('carry.orders', JSON.stringify(STATE.activeOrders));
-  renderOrderFilter();
-  renderCards();
-}
-
-function clearOrders() {
-  STATE.activeOrders = [];
-  localStorage.setItem('carry.orders', JSON.stringify(STATE.activeOrders));
-  renderOrderFilter();
-  renderCards();
-}
-
-function renderOrderFilter() {
-  const bar = document.getElementById('order-filter');
-  if (!bar) return;
-  const labels = { A: 'A 文档阻断', B: 'B 流程阻断', C: 'C 范围明确', D: 'D 体验细节' };
-  bar.querySelectorAll('.tag-chip[data-order]').forEach(btn => {
-    const order = btn.dataset.order;
-    const active = STATE.activeOrders.includes(order);
-    btn.classList.toggle('active', active);
-    btn.onclick = () => toggleOrder(order);
-    btn.innerHTML = active ? labels[order] + ' <span class="x">×</span>' : labels[order];
-    btn.style.boxShadow = active ? '0 0 0 2px var(--blue)' : '';
-  });
-  // 末尾追加清空按钮
-  let clearBtn = bar.querySelector('.order-clear');
-  if (STATE.activeOrders.length) {
-    if (!clearBtn) {
-      clearBtn = document.createElement('button');
-      clearBtn.className = 'tag-clear';
-      clearBtn.textContent = '✕ 清空';
-      clearBtn.onclick = clearOrders;
-      bar.appendChild(clearBtn);
-    }
-  } else if (clearBtn) {
-    clearBtn.remove();
-  }
-}
-
-function renderStatusBar() {
-  const r = STATE.data.review;
-  const c = r.conclusion;
-  const sbCon = document.getElementById('sb-conclusion');
-  sbCon.textContent = r.conclusionLabel;
-  sbCon.className = 'sb-conclusion ' + (c === 'conditional_pass' ? 'sb-cond' : c === 'pass' ? 'sb-pass' : 'sb-rej');
-  document.getElementById('sb-gate-pass').textContent = r.gates.pass;
-  document.getElementById('sb-gate-warn').textContent = r.gates.warn;
-  document.getElementById('sb-gate-fail').textContent = r.gates.fail;
-  document.getElementById('sb-p0').textContent = r.issues.p0.total;
-  document.getElementById('sb-p1').textContent = r.issues.p1.total;
-  document.getElementById('sb-open').textContent = r.issues.open.total;
-  document.getElementById('sb-feedback').textContent = STATE.data.feedback.total;
-  document.getElementById('sb-questions').textContent = STATE.data.questions.total;
-  document.getElementById('sb-deps').textContent = STATE.data.deps.total;
-  document.getElementById('sb-blockers').textContent = STATE.data.blockers.total;
-  document.getElementById('sb-diff').textContent = STATE.data.diff.total;
-  document.getElementById('sb-gap').textContent = STATE.data.gap.total;
-}
-
-function renderTimeline() {
-  const r = STATE.data.review;
-  document.getElementById('tl-now-version').textContent = r.version;
-  document.getElementById('tl-now-badge').textContent = r.conclusionLabel;
-  document.getElementById('tl-now-meta').textContent =
-    r.reviewDate + ' · 门禁 ' + r.gates.total +
-    ' (0✅/' + r.gates.warn + '⚠️/' + r.gates.fail + '❌) · ' +
-    r.issues.p0.total + ' P0 · ' + r.issues.p1.total + ' P1 · ' +
-    r.issues.open.total + ' Open';
-  const ul = r.remediationPlan.map(p =>
-    '<li><b>' + p.deadline + ':</b> ' + p.items.join(' / ') + '</li>'
-  ).join('');
-  document.getElementById('tl-now-remediation').innerHTML =
-    '<ul style="margin-top:4px">' + ul + '</ul>';
-}
-
-function renderRolePrompt() {
-  document.getElementById('role-prompt').innerHTML =
-    '<b>' + getRoleLabel(STATE.currentRole) + ' 视角:</b> ' + (ROLE_PROMPTS[STATE.currentRole] || '');
-  document.getElementById('sec3-hint').textContent =
-    '当前角色:' + getRoleLabel(STATE.currentRole) + ' · 显示匹配子项';
-}
-
-function getRoleLabel(role) {
-  const map = {
-    boss:'老板', product:'产品', dev:'开发',
-    customer_success:'客户经理', newcomer:'新人'
-  };
-  return map[role] || role;
-}
-
-function renderCards() {
-  const grid = document.getElementById('card-grid');
-  let visibleCards = STATE.cardRegistry.filter(c =>
-    c.visibleTo.includes(STATE.currentRole)
-  );
-  if (STATE.activeTags.length) {
-    visibleCards = visibleCards.filter(c => {
-      const data = STATE.data[c.id === 'review' ? 'review' : c.id === 'external-deps' ? 'deps' : c.id];
-      const itemTags = (data && data.items) ? data.items.flatMap(i => i.tags || []) : [];
-      const merged = new Set([...(c.tags || []), ...itemTags]);
-      return Array.from(merged).some(t => STATE.activeTags.includes(t));
-    });
-  }
-  if (STATE.activeOrders.length) {
-    visibleCards = visibleCards.filter(c => {
-      const data = STATE.data[c.id === 'review' ? 'review' : c.id === 'external-deps' ? 'deps' : c.id];
-      const orders = (data && data.items) ? data.items.flatMap(i => i.clarifyOrder || []) : [];
-      return orders.some(o => STATE.activeOrders.includes(o));
-    });
-  }
-  if (!visibleCards.length) {
-    const filters = [];
-    if (STATE.activeTags.length) filters.push('标签=' + STATE.activeTags.join('|'));
-    if (STATE.activeOrders.length) filters.push('顺序=' + STATE.activeOrders.join('|'));
-    const msg = filters.length
-      ? '当前角色 + [' + filters.join(', ') + '] 无可见卡片'
-      : '当前角色无可见子项,请切换角色';
-    grid.innerHTML = '<div class="empty-msg">' + msg + '</div>';
-    return;
-  }
-  grid.innerHTML = visibleCards.map(renderCard).join('');
-  bindCardActions();
-}
-
-function renderCard(meta) {
-  const data = STATE.data[meta.id === 'review' ? 'review' : meta.id === 'external-deps' ? 'deps' : meta.id];
-  if (!data) return '';
-  const count = data.total;
-  const urgencyClass = 'nc-' + (meta.urgency || 'quarterly');
-  const desc = renderCardDesc(meta.id, data);
-  const actions = renderCardActions(meta, data);
-  // 聚合 tags + clarifyOrder + 最高 priority
-  const itemTags = (data.items || []).flatMap(i => i.tags || []);
-  const mergedTags = Array.from(new Set([...(meta.tags || []), ...itemTags]));
-  const itemOrders = (data.items || []).flatMap(i => i.clarifyOrder || []);
-  const uniqueOrders = Array.from(new Set(itemOrders));
-  const prios = (data.items || []).map(i => i.priority).filter(Boolean);
-  const topPrio = prios.includes('P0') ? 'P0' : prios.includes('P1') ? 'P1' : prios.includes('P2') ? 'P2' : prios.includes('P3') ? 'P3' : '';
-  const tagsHtml = mergedTags.map(t =>
-    '<span class="nc-tag t-' + t + '">' + escapeHtml(t) + '</span>'
-  ).join('');
-  const ordersHtml = uniqueOrders.slice(0, 4).map(o =>
-    '<span class="nc-tag t-' + o + '">' + o + '</span>'
-  ).join('');
-  return '<div class="nav-card" data-card-id="' + meta.id + '">' +
-    (topPrio ? '<span class="nc-priority ' + topPrio.toLowerCase() + '">' + topPrio + '</span>' : '') +
-    '<span class="nc-count ' + urgencyClass + '">' + count + ' 项</span>' +
-    '<span class="nc-icon">' + meta.icon + '</span>' +
-    '<span class="nc-title">' + escapeHtml(meta.id === 'review' ? '评审详情' : (data.moduleLabel || '')) + '</span>' +
-    '<span class="nc-desc">' + desc + '</span>' +
-    ((tagsHtml || ordersHtml) ? '<div class="nc-bar">' + tagsHtml + ordersHtml + '</div>' : '') +
-    actions +
-  '</div>';
-}
-
-function renderCardDesc(id, data) {
-  switch (id) {
-    case 'feedback':    return '客户/业务/测试的散点反馈 · 来源:钉钉群';
-    case 'questions':   return '待客户回复的问题 · 一键复制到钉钉';
-    case 'external-deps':return '跨团队/客户/第三方的依赖';
-    case 'blockers':    return '代码层面阻塞,开发无法启动';
-    case 'code-diff':   return 'git diff 自动生成 · 可追溯';
-    case 'gap':         return '需求 vs 实际实现差距';
-    case 'review':      return 'V1.0 评审结论/门禁/P0/P1/Open 完整快照';
-    default: return '';
-  }
-}
-
-function renderCardActions(meta, data) {
-  let html = '<div class="nc-actions">';
-  if (meta.actions.includes('copy') && data.items && data.items.length) {
-    html += '<button class="nc-action" data-action="copy" data-card="' + meta.id + '">📋 一键复制</button>';
-  }
-  if (meta.actions.includes('detail')) {
-    if (meta.externalLink) {
-      html += '<a class="nc-action" href="' + meta.externalLink + '">→ 详情</a>';
-    } else {
-      html += '<button class="nc-action" data-action="detail" data-card="' + meta.id + '">查看列表</button>';
-    }
-  }
-  html += '</div>';
-  return html;
-}
-
-function bindCardActions() {
-  document.querySelectorAll('[data-action="copy"]').forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      copyCardItems(btn.dataset.card, btn);
+    const rolePrompts = {
+      boss: '3 个 P0 阻塞开发 / 5 个签字栏空缺 / 整体进度需关注',
+      product: '11 个 Open 问题需关闭 / 22 项需推动 / 评审整改路径跟进',
+      dev: '3 个阻塞项 + 17 个代码差异 + 51 个 GAP,优先关阻塞',
+      customer_success: '26 评论 + 35 问题 + 15 依赖,均可一键复制到钉钉',
+      newcomer: '先读:技术架构 / 核心流程 / 模块下钻,熟悉后再介入业务'
     };
-  });
-  document.querySelectorAll('[data-action="detail"]').forEach(btn => {
-    btn.onclick = (e) => {
-      e.stopPropagation();
-      showDetail(btn.dataset.card);
+
+    const roleLabel = (r) => roles.find(x => x.key === r)?.label || r;
+    const rolePrompt = computed(() => rolePrompts[currentRole.value] || '');
+
+    const getData = (id) => (review.value && review.value[id]) ? review.value[id] : {};
+
+    const cardHasTag = (meta, tag) => {
+      const d = getData(meta.id);
+      const merged = new Set([...(meta.tags || []), ...((d.items || []).flatMap(i => i.tags || []))]);
+      return merged.has(tag);
     };
-  });
-}
+    const cardHasOrder = (meta, order) => {
+      const d = getData(meta.id);
+      return (d.items || []).some(i => (i.clarifyOrder || []).includes(order));
+    };
 
-function copyCardItems(cardId, btn) {
-  const data = STATE.data[cardId === 'external-deps' ? 'deps' : cardId];
-  if (!data || !data.items) return;
-  const text = data.items.map(i =>
-    i.copyText || (i.content || i.question || i.name || i.title || '')
-  ).join('\n');
-  const ok = () => {
-    btn.classList.add('copied');
-    const old = btn.textContent;
-    btn.textContent = '✅ 已复制';
-    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = old; }, 1500);
-  };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(ok).catch(() => fallbackCopy(text, ok));
-  } else {
-    fallbackCopy(text, ok);
+    const visibleCards = computed(() => {
+      const registry = design.value?.cardMeta || [];
+      let v = registry.filter(c => (c.visibleTo || []).includes(currentRole.value));
+      if (activeTags.value.length) {
+        v = v.filter(c => activeTags.value.some(t => cardHasTag(c, t)));
+      }
+      if (activeOrders.value.length) {
+        v = v.filter(c => activeOrders.value.some(o => cardHasOrder(c, o)));
+      }
+      return v;
+    });
+
+    const cardLabel = (m) => {
+      if (m.id === 'review') return '评审详情';
+      const d = getData(m.id);
+      return d.moduleLabel || m.id;
+    };
+
+    const cardSummary = computed(() => {
+      return visibleCards.value.map(c => {
+        const d = getData(c.id);
+        return d.total ? `<b class="text-slate-50">${d.total}</b> ${cardLabel(c)}` : '';
+      }).filter(Boolean).join(' · ');
+    });
+
+    const totalFiltered = computed(() => {
+      return visibleCards.value.reduce((s, c) => s + (getData(c.id).total || 0), 0);
+    });
+
+    const filterDesc = computed(() => {
+      const parts = [];
+      if (activeTags.value.length) parts.push('标签=' + activeTags.value.join('|'));
+      if (activeOrders.value.length) parts.push('顺序=' + activeOrders.value.join('|'));
+      return parts.join(', ');
+    });
+
+    const conclusionClass = computed(() => {
+      const c = dashboard.value?.conclusion;
+      if (c === 'pass') return 'bg-emerald-500/15 text-emerald-300';
+      if (c === 'reject') return 'bg-red-500/15 text-red-300';
+      return 'bg-amber-500/15 text-amber-300';
+    });
+
+    const refsItems = computed(() => {
+      const d = design.value || {};
+      return [
+        { icon: '🏗️', data: d.architecture },
+        { icon: '🔄', data: d.coreFlow },
+        { icon: '🔍', data: d.modules, total: d.modules?.total },
+        { icon: '📚', data: d.docCenter, total: d.docCenter?.total }
+      ].filter(x => x.data);
+    });
+
+    // Tailwind class 查找表
+    const tagColor = (t) => ({
+      '评审': 'bg-blue-400/10 text-blue-300',
+      '阻塞': 'bg-red-500/15 text-red-300',
+      '客户协作': 'bg-rose-400/15 text-rose-300',
+      '代码': 'bg-cyan-400/15 text-cyan-300',
+      '需求': 'bg-purple-400/15 text-purple-300',
+      '支付': 'bg-amber-400/15 text-amber-300',
+      '权限': 'bg-emerald-400/15 text-emerald-300',
+      '签字': 'bg-orange-400/15 text-orange-300',
+      '参考资料': 'bg-slate-500/15 text-slate-400',
+      'GAP': 'bg-purple-400/15 text-purple-300'
+    }[t] || 'bg-slate-700/40 text-slate-300');
+
+    const tagDotColor = (t) => tagColor(t).split(' ')[1].replace('text-', 'bg-');
+
+    const orderColor = (o) => ({
+      'A': 'bg-red-500/20 text-red-300 border-red-500/40',
+      'B': 'bg-amber-500/15 text-amber-300 border-amber-500/40',
+      'C': 'bg-blue-400/15 text-blue-300 border-blue-400/40',
+      'D': 'bg-slate-700/15 text-slate-400 border-slate-700/40'
+    }[o] || 'bg-slate-700/40 text-slate-300 border-slate-700');
+
+    const priorityBadgeClass = (p) => {
+      if (p === 'P0') return 'px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-500/20 text-red-300 border border-red-500/40';
+      if (p === 'P1') return 'px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40';
+      if (p === 'P2') return 'px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-400/15 text-blue-300 border border-blue-400/40';
+      return 'px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-700/15 text-slate-400 border border-slate-700/40';
+    };
+
+    // 持久化
+    const switchRole = (r) => {
+      currentRole.value = r;
+      localStorage.setItem('carry.role', r);
+    };
+    const toggleTag = (t) => {
+      const i = activeTags.value.indexOf(t);
+      if (i >= 0) activeTags.value.splice(i, 1);
+      else activeTags.value.push(t);
+      localStorage.setItem('carry.tags', JSON.stringify(activeTags.value));
+    };
+    const clearTags = () => {
+      activeTags.value = [];
+      localStorage.setItem('carry.tags', JSON.stringify([]));
+    };
+    const toggleOrder = (o) => {
+      const i = activeOrders.value.indexOf(o);
+      if (i >= 0) activeOrders.value.splice(i, 1);
+      else activeOrders.value.push(o);
+      localStorage.setItem('carry.orders', JSON.stringify(activeOrders.value));
+    };
+    const clearOrders = () => {
+      activeOrders.value = [];
+      localStorage.setItem('carry.orders', JSON.stringify([]));
+    };
+
+    const copyCard = async (cardId, ev) => {
+      const d = getData(cardId);
+      const items = d.items || [];
+      if (!items.length) return;
+      const text = items.map(i => i.copyText || (i.content || i.question || i.name || i.title || '')).join('\n');
+      const btn = ev.currentTarget;
+      const ok = () => {
+        const old = btn.textContent;
+        btn.textContent = '✅ 已复制';
+        btn.classList.add('bg-emerald-500', 'text-slate-900', 'border-emerald-500');
+        setTimeout(() => { btn.textContent = old; btn.classList.remove('bg-emerald-500', 'text-slate-900', 'border-emerald-500'); }, 1500);
+      };
+      try {
+        await navigator.clipboard.writeText(text);
+        ok();
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); ok(); } catch (_) {}
+        document.body.removeChild(ta);
+      }
+    };
+
+    // 加载
+    const fetchJSON = async (path) => {
+      const r = await fetch(path + '?t=' + Date.now());
+      if (!r.ok) throw new Error('加载 ' + path + ' 失败 (' + r.status + ')');
+      return await r.json();
+    };
+
+    const loadAll = async () => {
+      loading.value = true;
+      try {
+        const [d, r, ds] = await Promise.all([
+          fetchJSON('data/dashboard.json'),
+          fetchJSON('data/review-v1.0.json'),
+          fetchJSON('data/design.json')
+        ]);
+        dashboard.value = d;
+        review.value = r;
+        design.value = ds;
+      } catch (e) {
+        loadError.value = e.message || String(e);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    onMounted(loadAll);
+
+    return {
+      dashboard, review, design, loading, loadError,
+      allTags: computed(() => design.value?.tags || []),
+      currentRole, activeTags, activeOrders,
+      roles, orderLevels, rolePrompt, roleLabel,
+      visibleCards, cardSummary, totalFiltered, filterDesc,
+      conclusionClass, refsItems,
+      tagColor, tagDotColor, orderColor, priorityBadgeClass,
+      cardLabel, getData,
+      switchRole, toggleTag, clearTags, toggleOrder, clearOrders,
+      copyCard
+    };
   }
-}
-
-function fallbackCopy(text, cb) {
-  const ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.select();
-  try { document.execCommand('copy'); cb && cb(); } catch (e) {}
-  document.body.removeChild(ta);
-}
-
-function renderRefs() {
-  const r = STATE.data.refs;
-  const items = [
-    { icon:'🏗️', data:r.architecture },
-    { icon:'🔄', data:r.coreFlow },
-    { icon:'🔍', data:r.modules, total:r.modules.total },
-    { icon:'📚', data:r.docCenter, total:r.docCenter.total }
-  ];
-  document.getElementById('refs-bar').innerHTML = items.map(it => {
-    const isPending = it.data.status === 'pending';
-    const cls = 'ref-link' + (isPending ? ' pending' : '');
-    const href = isPending ? '#' : it.data.link;
-    const title = isPending
-      ? escapeHtml(it.data.title) + ' — 待产出 · 预计 ' + escapeHtml(it.data.plannedFor)
-      : escapeHtml(it.data.title);
-    return '<a class="' + cls + '" href="' + href + '"' +
-           (isPending ? ' title="待产出 · 预计 ' + escapeHtml(it.data.plannedFor) + '"' : '') + '>' +
-      '<span class="icon">' + it.icon + '</span>' +
-      '<span>' + title + '</span>' +
-      (isPending
-        ? '<span class="planned">' + escapeHtml(it.data.plannedFor) + ' 待产出</span>'
-        : (it.total ? '<span class="total">' + it.total + '</span>' : '')) +
-    '</a>';
-  }).join('');
-}
-
-function renderFooter() {
-  document.getElementById('meta-stage').textContent =
-    STATE.meta.version + ' 评审闭环';
-  document.getElementById('meta-updated').textContent = STATE.meta.reviewDate;
-  document.getElementById('footer-date').textContent = STATE.meta.reviewDate;
-}
-
-/* ================================================================
-   详情视图
-   ================================================================ */
-function showDetail(cardId) {
-  const data = STATE.data[cardId === 'external-deps' ? 'deps' : cardId];
-  if (!data) return;
-  const grid = document.getElementById('card-grid');
-  const detail = document.getElementById('detail-view');
-  grid.classList.add('fade-out');
-  setTimeout(() => {
-    document.getElementById('detail-content').innerHTML = renderDetail(cardId, data);
-    grid.style.display = 'none';
-    grid.classList.remove('fade-out');
-    detail.style.display = 'block';
-    detail.classList.remove('fade-in');
-    void detail.offsetWidth;
-    detail.classList.add('fade-in');
-    window.scrollTo(0, 0);
-  }, 250);
-}
-
-function renderDetail(cardId, data) {
-  let html = '<div class="sec-title">' + getCardIcon(cardId) + ' ' +
-    (cardId === 'review' ? '评审详情' : (data.moduleLabel || cardId)) + ' (' + data.total + ')</div>';
-  html += '<div class="sec-desc">数据更新于 ' + (data.updatedAt || data.generatedAt || STATE.meta.reviewDate) + '</div>';
-  if (!data.items || !data.items.length) {
-    html += '<div class="empty-msg">暂无数据</div>';
-    return html;
-  }
-  html += '<table><thead><tr>' + getDetailHeaders(cardId) + '</tr></thead><tbody>';
-  data.items.forEach(item => {
-    html += '<tr>' + getDetailRow(cardId, item) + '</tr>';
-  });
-  html += '</tbody></table>';
-  return html;
-}
-
-function getCardIcon(id) {
-  const map = { feedback:'💬', questions:'❓', 'external-deps':'🔗',
-    blockers:'🚧', 'code-diff':'🔀', gap:'📐', review:'📄' };
-  return map[id] || '📋';
-}
-
-function getDetailHeaders(id) {
-  switch (id) {
-    case 'feedback':    return '<th>reqId</th><th>作者</th><th>内容</th><th>模块</th><th>状态</th><th>澄清类型</th><th>顺序</th><th>负责人</th>';
-    case 'questions':   return '<th>reqId</th><th>问题</th><th>询问</th><th>状态</th><th>截止</th><th>模块</th><th>顺序</th>';
-    case 'external-deps':return '<th>reqId</th><th>名称</th><th>依赖方</th><th>影响</th><th>状态</th><th>预计</th><th>顺序</th>';
-    case 'blockers':    return '<th>reqId</th><th>标题</th><th>阻塞内容</th><th>负责人</th><th>严重度</th><th>顺序</th>';
-    case 'code-diff':   return '<th>reqId</th><th>模块</th><th>文件</th><th>类型</th><th>+/-</th><th>提交</th><th>顺序</th>';
-    case 'gap':         return '<th>reqId</th><th>模块</th><th>PRD</th><th>预期</th><th>实际</th><th>类型</th><th>优先级</th><th>顺序</th>';
-    case 'review':      return '<th>字段</th><th>值</th>';
-    default: return '';
-  }
-}
-
-function getDetailRow(id, item) {
-  const reqIdCell = '<td><span class="nc-reqid">' + escapeHtml(item.reqId || '-') + '</span></td>';
-  const orderCells = '<td>' + (item.clarifyOrder || []).map(o =>
-    '<span class="nc-tag t-' + o + '" style="margin-right:2px">' + o + '</span>'
-  ).join('') + '</td>';
-  switch (id) {
-    case 'feedback':
-      return reqIdCell +
-             '<td>' + escapeHtml(item.author) + '</td><td>' + escapeHtml(item.content) + '</td>' +
-             '<td>' + escapeHtml(item.module || '-') + '</td>' +
-             '<td><span class="badge b-' + (item.status === 'status-pending' ? 'pending' : 'ok') + '">' +
-             (item.status === 'status-pending' ? '🟡 待回复' : item.status === 'status-replied' ? '✅ 已回复' : '✅ 已解决') + '</span></td>' +
-             '<td>' + escapeHtml(item.clarifyType || '-') + '</td>' +
-             orderCells +
-             '<td>' + escapeHtml(item.clarifyOwner || '-') + '</td>';
-    case 'questions':
-      return reqIdCell +
-             '<td>' + escapeHtml(item.question) + '</td>' +
-             '<td>' + escapeHtml(item.askedTo) + '</td>' +
-             '<td><span class="badge b-' + (item.status === 'status-pending' ? 'waiting' : 'ok') + '">' +
-             (item.status === 'status-pending' ? '🟡 等待' : item.status === 'status-replied' ? '✅ 已回复' : '🔴 升级') + '</span></td>' +
-             '<td>' + escapeHtml(item.deadline || '-') + '</td>' +
-             '<td>' + escapeHtml(item.module || '-') + '</td>' +
-             orderCells;
-    case 'external-deps':
-      return reqIdCell +
-             '<td>' + escapeHtml(item.name) + '</td><td>' + escapeHtml(item.dependsOn) + '</td>' +
-             '<td>' + escapeHtml(item.impact || '-') + '</td>' +
-             '<td><span class="badge b-' + (item.status || '').replace('status-','') + '">' + statusLabel((item.status || '').replace('status-','')) + '</span></td>' +
-             '<td>' + escapeHtml(item.expectedDate || '-') + '</td>' +
-             orderCells;
-    case 'blockers':
-      return reqIdCell +
-             '<td>' + escapeHtml(item.title) + '</td><td>' + escapeHtml(item.blockingWhat) + '</td>' +
-             '<td>' + escapeHtml(item.owner) + '</td>' +
-             '<td><span class="badge b-' + (item.severity === 'critical' ? 'p0' : 'p1') + '">' +
-             (item.severity === 'critical' ? '🔴 严重' : '🟡 高') + '</span></td>' +
-             orderCells;
-    case 'code-diff':
-      return reqIdCell +
-             '<td>' + escapeHtml(item.module) + '</td><td><code style="font-size:10px">' +
-             escapeHtml(item.filePath) + '</code></td>' +
-             '<td>' + escapeHtml(item.changeType) + '</td>' +
-             '<td style="color:var(--green)">+' + item.linesAdded + ' <span style="color:var(--red)">-' + item.linesRemoved + '</span></td>' +
-             '<td><code style="font-size:10px">' + escapeHtml(item.commitSha) + '</code></td>' +
-             orderCells;
-    case 'gap':
-      return reqIdCell +
-             '<td>' + escapeHtml(item.module) + '</td><td>' + escapeHtml(item.prdRef) + '</td>' +
-             '<td>' + escapeHtml(item.expected) + '</td>' +
-             '<td>' + escapeHtml(item.actual) + '</td>' +
-             '<td>' + escapeHtml(item.gapType) + '</td>' +
-             '<td><span class="badge b-' + (item.priority || 'p1').toLowerCase() + '">' + (item.priority || '-') + '</span></td>' +
-             orderCells;
-    case 'review':
-      return '<td colspan="2">此卡片为评审快照,完整数据见 <a href="v1.0-review-2026-07-30.html">评审详情页</a></td>';
-    default: return '<td>' + JSON.stringify(item) + '</td>';
-  }
-}
-
-function statusLabel(s) {
-  return { waiting:'🟡 等待', confirmed:'✅ 已确认', blocked:'🔴 阻塞', resolved:'✅ 已解决' }[s] || s;
-}
-
-function showGrid() {
-  const grid = document.getElementById('card-grid');
-  const detail = document.getElementById('detail-view');
-  detail.style.display = 'none';
-  grid.style.display = 'grid';
-  grid.classList.remove('fade-out');
-}
-
-/* ================================================================
-   工具
-   ================================================================ */
-function escapeHtml(s) {
-  if (s == null) return '';
-  return String(s).replace(/[&<>"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-  }[c]));
-}
-
-function exportPDF(btn) {
-  alert('PDF 导出功能将在 P3 阶段接入(与评审台共享同一导出组件)');
-}
-
-/* ================================================================
-   启动
-   ================================================================ */
-loadAll();
+}).mount('#app');
 </script>
-</body></html>
+</body>
+</html>

@@ -1,0 +1,92 @@
+{
+  "version": "V1.0",
+  "reviewDate": "2026-07-30",
+  "conclusion": "conditional_pass",
+  "conclusionLabel": "有条件通过",
+  "totals": {
+    "feedback": 26,
+    "questions": 35,
+    "externalDeps": 15,
+    "blockers": 3,
+    "codeDiff": 17,
+    "gaps": 51,
+    "p0": 20,
+    "p1": 31,
+    "open": 22,
+    "gates": {
+      "total": 17,
+      "pass": 0,
+      "warn": 6,
+      "fail": 11
+    }
+  },
+  "stages": {
+    "current": "V1.0 评审",
+    "future": [
+      "V1.6",
+      "V1.7",
+      "V2.0"
+    ],
+    "archived": [
+      "V0.x 立项",
+      "V0.x 初版 PRD"
+    ]
+  },
+  "remediationPlan": [
+    {
+      "deadline": "1周内",
+      "items": [
+        "补全评审人/验收负责人",
+        "Q3 / Q5 / Q6 / Q8 / Q9 / Q10 / Q13 / Q14 联合决策",
+        "输出角色-菜单-Tab-动作-字段权限矩阵",
+        "输出还号换绑字段映射表"
+      ]
+    },
+    {
+      "deadline": "2周内",
+      "items": [
+        "Q15 / Q16 / Q17 / Q18 / Q20 / Q21 / Q22 联合决策",
+        "输出支付/退款/分期/资损完整规则表",
+        "输出分期待还款/超额收款/多次部分退款规则说明",
+        "补充三端字段口径对照表"
+      ]
+    },
+    {
+      "deadline": "4周内",
+      "items": [
+        "输出数据库 DDL 评审稿",
+        "输出 OpenAPI 接口规范初稿",
+        "输出前端开发规范 V1.0",
+        "输出测试用例库",
+        "输出上线迁移方案",
+        "汇总为 V2.0 正式开发基线"
+      ]
+    }
+  ],
+  "availableVersions": [
+    {
+      "code": "V1.0",
+      "label": "V1.0 评审",
+      "status": "current",
+      "reviewDate": "2026-07-30"
+    },
+    {
+      "code": "V1.6",
+      "label": "V1.6 短期",
+      "status": "planned",
+      "reviewDate": null
+    },
+    {
+      "code": "V1.7",
+      "label": "V1.7 中期",
+      "status": "planned",
+      "reviewDate": null
+    },
+    {
+      "code": "V2.0",
+      "label": "V2.0 长期",
+      "status": "planned",
+      "reviewDate": null
+    }
+  ]
+}

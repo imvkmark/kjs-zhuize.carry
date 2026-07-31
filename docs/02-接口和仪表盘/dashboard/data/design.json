@@ -1,0 +1,176 @@
+{
+  "architecture": {
+    "title": "技术架构",
+    "link": "",
+    "plannedFor": "V1.6",
+    "status": "pending",
+    "lastUpdated": "2026-07-10"
+  },
+  "coreFlow": {
+    "title": "核心流程",
+    "link": "",
+    "plannedFor": "V1.6",
+    "status": "pending",
+    "lastUpdated": "2026-07-10"
+  },
+  "modules": {
+    "title": "模块下钻",
+    "total": 14,
+    "link": "",
+    "plannedFor": "V1.7",
+    "status": "pending",
+    "lastUpdated": "2026-07-15"
+  },
+  "docCenter": {
+    "title": "文档中心",
+    "total": 12,
+    "link": "../../index.html",
+    "status": "ready",
+    "lastUpdated": "2026-07-30"
+  },
+  "cardMeta": [
+    {
+      "id": "feedback",
+      "icon": "💬",
+      "urgency": "realtime",
+      "visibleTo": [
+        "customer_success",
+        "boss",
+        "product"
+      ],
+      "actions": [
+        "copy",
+        "detail"
+      ],
+      "tags": [
+        "客户协作",
+        "需求"
+      ],
+      "externalLink": null,
+      "badgeClass": "nb-rose"
+    },
+    {
+      "id": "questions",
+      "icon": "❓",
+      "urgency": "realtime",
+      "visibleTo": [
+        "customer_success",
+        "product",
+        "boss"
+      ],
+      "actions": [
+        "copy",
+        "detail"
+      ],
+      "tags": [
+        "客户协作"
+      ],
+      "externalLink": null,
+      "badgeClass": "nb-amber"
+    },
+    {
+      "id": "external-deps",
+      "icon": "🔗",
+      "urgency": "realtime",
+      "visibleTo": [
+        "customer_success",
+        "product",
+        "boss",
+        "dev"
+      ],
+      "actions": [
+        "copy",
+        "detail"
+      ],
+      "tags": [
+        "客户协作",
+        "阻塞"
+      ],
+      "externalLink": null,
+      "badgeClass": "nb-blue"
+    },
+    {
+      "id": "blockers",
+      "icon": "🚧",
+      "urgency": "realtime",
+      "visibleTo": [
+        "dev",
+        "boss",
+        "product"
+      ],
+      "actions": [
+        "detail"
+      ],
+      "tags": [
+        "阻塞"
+      ],
+      "externalLink": null,
+      "badgeClass": "nb-red"
+    },
+    {
+      "id": "code-diff",
+      "icon": "🔀",
+      "urgency": "weekly",
+      "visibleTo": [
+        "dev"
+      ],
+      "actions": [
+        "detail"
+      ],
+      "tags": [
+        "代码"
+      ],
+      "externalLink": null,
+      "badgeClass": "nb-blue"
+    },
+    {
+      "id": "gap",
+      "icon": "📐",
+      "urgency": "weekly",
+      "visibleTo": [
+        "product",
+        "dev"
+      ],
+      "actions": [
+        "detail"
+      ],
+      "tags": [
+        "需求"
+      ],
+      "externalLink": null,
+      "badgeClass": "nb-purple"
+    },
+    {
+      "id": "review",
+      "icon": "📄",
+      "urgency": "quarterly",
+      "visibleTo": [
+        "boss",
+        "product",
+        "dev",
+        "customer_success",
+        "newcomer"
+      ],
+      "actions": [
+        "detail"
+      ],
+      "tags": [
+        "评审",
+        "签字"
+      ],
+      "externalLink": "v1.0-review-2026-07-30.html",
+      "badgeClass": "nb-amber"
+    }
+  ],
+  "tags": [
+    "评审",
+    "阻塞",
+    "客户协作",
+    "代码",
+    "需求",
+    "支付",
+    "权限",
+    "签字",
+    "参考资料"
+  ]
+}
