@@ -37,42 +37,6 @@
     </button>
   </div>
 
-  <!-- 业务标签筛选 -->
-  <div class="mt-3 flex flex-wrap justify-center gap-1.5 px-3">
-    <button v-for="t in allTags" :key="t"
-      @click="toggleTag(t)"
-      :class="['px-2.5 py-1 rounded-full text-[10px] font-semibold border transition-all inline-flex items-center gap-1',
-               activeTags.includes(t)
-                 ? 'bg-blue-500 border-blue-500 text-white'
-                 : 'bg-slate-900/60 border-slate-700 text-slate-400 hover:border-blue-500 hover:text-white']">
-      <span :class="['w-1.5 h-1.5 rounded-full', tagDotColor(t)]"></span>
-      {{ t }}
-      <span v-if="activeTags.includes(t)" class="opacity-60">×</span>
-    </button>
-    <button v-if="activeTags.length" @click="clearTags"
-      class="px-2.5 py-1 rounded-full text-[10px] border border-dashed border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-400">
-      ✕ 清空筛选
-    </button>
-  </div>
-
-  <!-- 澄清顺序筛选 -->
-  <div class="mt-2 flex flex-wrap justify-center gap-1.5 px-3">
-    <span class="text-[10px] text-slate-500 font-semibold inline-flex items-center">澄清顺序:</span>
-    <button v-for="o in orderLevels" :key="o.key"
-      @click="toggleOrder(o.key)"
-      :class="['px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all',
-               activeOrders.includes(o.key)
-                 ? 'shadow-[0_0_0_2px_rgb(59,130,246)] ' + o.activeClass
-                 : o.idleClass]">
-      {{ o.key }} {{ o.label }}
-      <span v-if="activeOrders.includes(o.key)" class="opacity-60">×</span>
-    </button>
-    <button v-if="activeOrders.length" @click="clearOrders"
-      class="px-2.5 py-1 rounded-full text-[10px] border border-dashed border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-400">
-      ✕ 清空
-    </button>
-  </div>
-
   <!-- 全局操作 -->
   <div class="mt-3 flex flex-wrap justify-center gap-2">
     <button class="px-3 py-1.5 border border-slate-700 bg-slate-900/80 rounded-lg text-xs font-semibold text-slate-300 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all">
@@ -120,17 +84,17 @@
       <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-2">
         <div class="text-[10px] text-slate-400 mb-1">协作待办</div>
         <div class="flex items-baseline gap-1.5 flex-wrap text-base font-bold">
-          <span class="text-slate-50">{{ data?.feedback?.total || 0 }}</span><span class="text-[9px] text-slate-500">评论</span>
-          <span class="text-slate-50">{{ data?.questions?.total || 0 }}</span><span class="text-[9px] text-slate-500">问题</span>
-          <span class="text-slate-50">{{ data?.deps?.total || 0 }}</span><span class="text-[9px] text-slate-500">依赖</span>
+          <span class="text-slate-50">{{ dashboard?.totals?.feedback || 0 }}</span><span class="text-[9px] text-slate-500">评论</span>
+          <span class="text-slate-50">{{ dashboard?.totals?.questions || 0 }}</span><span class="text-[9px] text-slate-500">问题</span>
+          <span class="text-slate-50">{{ dashboard?.totals?.externalDeps || 0 }}</span><span class="text-[9px] text-slate-500">依赖</span>
         </div>
       </div>
       <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-2">
         <div class="text-[10px] text-slate-400 mb-1">代码侧</div>
         <div class="flex items-baseline gap-1.5 flex-wrap text-base font-bold">
-          <span class="text-slate-50">{{ data?.blockers?.total || 0 }}</span><span class="text-[9px] text-slate-500">阻塞</span>
-          <span class="text-slate-50">{{ data?.diff?.total || 0 }}</span><span class="text-[9px] text-slate-500">差异</span>
-          <span class="text-slate-50">{{ data?.gap?.total || 0 }}</span><span class="text-[9px] text-slate-500">GAP</span>
+          <span class="text-slate-50">{{ dashboard?.totals?.blockers || 0 }}</span><span class="text-[9px] text-slate-500">阻塞</span>
+          <span class="text-slate-50">{{ dashboard?.totals?.codeDiff || 0 }}</span><span class="text-[9px] text-slate-500">差异</span>
+          <span class="text-slate-50">{{ dashboard?.totals?.gaps || 0 }}</span><span class="text-[9px] text-slate-500">GAP</span>
         </div>
       </div>
     </div>
@@ -176,11 +140,11 @@
     </div>
   </div>
 
-  <!-- SECTION 3: 我的待办 -->
+  <!-- SECTION 3: V1.0 评审 -->
   <div class="text-[13px] font-bold text-slate-50 mt-3.5 mb-2 pb-1.5 border-b border-slate-700 flex items-center gap-1.5">
-    ⭐ 我的待办
+    📋 V1.0 评审
     <span class="text-[10px] text-slate-400 font-normal">
-      当前角色:{{ roleLabel(currentRole) }} · 显示 {{ visibleCards.length }} 张
+      当前角色:{{ roleLabel(currentRole) }} · 显示 {{ visibleCards.length }} 张卡 · {{ filteredItemCount }} 条明细
     </span>
   </div>
 
@@ -195,15 +159,101 @@
     <span class="text-slate-400">{{ cardSummary }}</span>
   </div>
 
-  <div class="bg-slate-700/30 border border-dashed border-slate-700 rounded-md px-3.5 py-2 mb-3.5 text-[10px] text-slate-400 leading-relaxed">
-    <b class="text-cyan-400">过滤</b> · 阻断与风险 [澄清级别: A/B/C 组合筛选] · 关注角色: {{ roleLabel(currentRole) }} · 状态: 待澄清 / 已回复 / 已解决
-    <span v-if="activeTags.length || activeOrders.length">
-      · 当前过滤:
-      <span v-if="activeTags.length" class="text-blue-300 ml-1">标签</span>
-      <span v-for="t in activeTags" :key="t" :class="['px-1.5 py-0.5 rounded text-[9px] mx-0.5', tagColor(t)]">{{ t }}</span>
-      <span v-if="activeOrders.length" class="text-blue-300 ml-1">级别</span>
-      <span v-for="o in activeOrders" :key="o" :class="['px-1.5 py-0.5 rounded text-[9px] mx-0.5 font-bold border', orderColor(o)]">{{ o }}</span>
-    </span>
+  <!-- V1.0 评审内部 8 字段筛选 -->
+  <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-3 mb-3.5">
+    <div class="text-[11px] font-bold text-slate-50 mb-2 flex items-center justify-between flex-wrap gap-2">
+      <span>🔍 评审内筛选(8 字段 · 多选 OR)</span>
+      <button v-if="hasAnyFilter" @click="clearAllReviewFilters"
+        class="px-2 py-0.5 rounded text-[9px] border border-dashed border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-400">
+        ✕ 清空全部
+      </button>
+    </div>
+
+    <!-- 优先级 -->
+    <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+      <span class="text-[10px] text-slate-500 font-semibold w-16 flex-shrink-0">优先级</span>
+      <button v-for="p in ['P0','P1','P2','P3']" :key="p"
+        @click="toggleFilter('priority', p)"
+        :class="['px-2 py-0.5 rounded text-[10px] font-bold border transition-all',
+                 filterPriority.includes(p) ? priorityBadgeClass(p) : 'bg-slate-900/60 border-slate-700 text-slate-400 hover:border-slate-500']">
+        {{ filterPriority.includes(p) ? '✓ ' : '' }}{{ p }}
+      </button>
+    </div>
+
+    <!-- 状态 -->
+    <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+      <span class="text-[10px] text-slate-500 font-semibold w-16 flex-shrink-0">状态</span>
+      <button v-for="s in [{k:'status-pending',l:'待澄清',c:'bg-amber-500/15 border-amber-500/40 text-amber-300'},{k:'status-replied',l:'已回复',c:'bg-blue-500/15 border-blue-500/40 text-blue-300'},{k:'status-resolved',l:'已解决',c:'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'}]" :key="s.k"
+        @click="toggleFilter('status', s.k)"
+        :class="['px-2 py-0.5 rounded text-[10px] font-semibold border transition-all',
+                 filterStatus.includes(s.k) ? s.c : 'bg-slate-900/60 border-slate-700 text-slate-400 hover:border-slate-500']">
+        {{ filterStatus.includes(s.k) ? '✓ ' : '' }}{{ s.l }}
+      </button>
+    </div>
+
+    <!-- 澄清顺序 -->
+    <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+      <span class="text-[10px] text-slate-500 font-semibold w-16 flex-shrink-0">澄清顺序</span>
+      <button v-for="o in orderLevels" :key="o.key"
+        @click="toggleFilter('order', o.key)"
+        :class="['px-2 py-0.5 rounded text-[10px] font-bold border transition-all',
+                 filterOrder.includes(o.key) ? o.activeClass : o.idleClass]">
+        {{ filterOrder.includes(o.key) ? '✓ ' : '' }}{{ o.key }} {{ o.label }}
+      </button>
+    </div>
+
+    <!-- 澄清类型 -->
+    <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+      <span class="text-[10px] text-slate-500 font-semibold w-16 flex-shrink-0">澄清类型</span>
+      <button v-for="t in [{k:'clarify-QA',l:'问题/反馈',c:'bg-blue-500/15 border-blue-500/40 text-blue-300'},{k:'clarify-外部依赖',l:'外部依赖',c:'bg-cyan-500/15 border-cyan-500/40 text-cyan-300'},{k:'clarify-阻塞项',l:'阻塞项',c:'bg-red-500/15 border-red-500/40 text-red-300'},{k:'clarify-GAP清单',l:'GAP',c:'bg-purple-500/15 border-purple-500/40 text-purple-300'}]" :key="t.k"
+        @click="toggleFilter('type', t.k)"
+        :class="['px-2 py-0.5 rounded text-[10px] font-semibold border transition-all',
+                 filterType.includes(t.k) ? t.c : 'bg-slate-900/60 border-slate-700 text-slate-400 hover:border-slate-500']">
+        {{ filterType.includes(t.k) ? '✓ ' : '' }}{{ t.l }}
+      </button>
+    </div>
+
+    <!-- 澄清角色 -->
+    <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+      <span class="text-[10px] text-slate-500 font-semibold w-16 flex-shrink-0">澄清角色</span>
+      <button v-for="o in ['开发','产品','业务方','客户','测试','安全','运营','法务']" :key="o"
+        @click="toggleFilter('owner', o)"
+        :class="['px-2 py-0.5 rounded text-[10px] font-semibold border transition-all',
+                 filterOwner.includes(o) ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300' : 'bg-slate-900/60 border-slate-700 text-slate-400 hover:border-slate-500']">
+        {{ filterOwner.includes(o) ? '✓ ' : '' }}{{ o }}
+      </button>
+    </div>
+
+    <!-- 模块 -->
+    <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+      <span class="text-[10px] text-slate-500 font-semibold w-16 flex-shrink-0">模块</span>
+      <button v-for="m in allModules" :key="m"
+        @click="toggleFilter('module', m)"
+        :class="['px-2 py-0.5 rounded text-[10px] font-semibold border transition-all',
+                 filterModule.includes(m) ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300' : 'bg-slate-900/60 border-slate-700 text-slate-400 hover:border-slate-500']">
+        {{ filterModule.includes(m) ? '✓ ' : '' }}{{ m }}
+      </button>
+    </div>
+
+    <!-- 需求类型 -->
+    <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+      <span class="text-[10px] text-slate-500 font-semibold w-16 flex-shrink-0">需求类型</span>
+      <button v-for="r in [{k:'req-func',l:'功能需求'},{k:'req-perf',l:'性能需求'},{k:'req-sec',l:'安全需求'}]" :key="r.k"
+        @click="toggleFilter('req', r.k)"
+        :class="['px-2 py-0.5 rounded text-[10px] font-semibold border transition-all',
+                 filterReq.includes(r.k) ? 'bg-amber-500/15 border-amber-500/40 text-amber-300' : 'bg-slate-900/60 border-slate-700 text-slate-400 hover:border-slate-500']">
+        {{ filterReq.includes(r.k) ? '✓ ' : '' }}{{ r.l }}
+      </button>
+    </div>
+
+    <!-- 编号 -->
+    <div class="flex flex-wrap items-center gap-1.5">
+      <span class="text-[10px] text-slate-500 font-semibold w-16 flex-shrink-0">编号</span>
+      <input v-model="filterReqIdPrefix" @input="onFilterReqId"
+        placeholder="LN- 前缀筛选,如 001"
+        class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-900/60 border border-slate-700 text-slate-200 focus:border-blue-500 outline-none w-40 placeholder:text-slate-600" />
+      <span v-if="filterReqIdPrefix" class="text-[10px] text-slate-500">匹配: {{ filterReqIdPrefix }}*</span>
+    </div>
   </div>
 
   <!-- 加载中 -->
@@ -224,7 +274,7 @@
         <h3 class="text-[13px] font-bold text-slate-50 m-0 flex items-center gap-1.5">
           {{ meta.icon }} {{ cardLabel(meta) }}
           <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-900/60 text-slate-400">
-            {{ getData(meta.id).total || 0 }} 项
+            {{ filteredItemsOf(meta.id).length }} / {{ getData(meta.id).total || 0 }} 项
           </span>
         </h3>
         <span class="text-[10px] text-slate-500 font-normal">
@@ -232,13 +282,14 @@
         </span>
       </div>
 
-      <div v-if="(getData(meta.id).items || []).length === 0"
+      <div v-if="filteredItemsOf(meta.id).length === 0"
         class="py-5 text-center text-slate-500 text-[11px] italic">
-        暂无明细数据(总计 {{ getData(meta.id).total || 0 }} 项 seed 未展开)
+        <span v-if="hasAnyFilter">当前筛选下无匹配项 · 共 {{ getData(meta.id).total || 0 }} 项</span>
+        <span v-else>暂无明细数据(总计 {{ getData(meta.id).total || 0 }} 项 seed 未展开)</span>
       </div>
 
       <div v-else class="divide-y divide-slate-700/40">
-        <div v-for="item in getData(meta.id).items" :key="item.reqId || item.id"
+        <div v-for="item in filteredItemsOf(meta.id)" :key="item.reqId || item.id"
           class="py-2.5">
           <div class="flex items-baseline gap-1.5 flex-wrap text-[12px] text-slate-200 leading-relaxed">
             <span class="text-cyan-400 font-semibold text-[11px] flex-shrink-0">问题:</span>
@@ -331,8 +382,18 @@ createApp({
     const loadError = ref('');
 
     const currentRole = ref(localStorage.getItem('carry.role') || 'product');
-    const activeTags = ref(JSON.parse(localStorage.getItem('carry.tags') || '[]'));
-    const activeOrders = ref(JSON.parse(localStorage.getItem('carry.orders') || '[]'));
+
+    // 8 字段筛选(V1.0 评审内部 · 多选 OR)
+    const loadFilter = (k) => JSON.parse(localStorage.getItem('carry.f.' + k) || '[]');
+    const saveFilter = (k, v) => localStorage.setItem('carry.f.' + k, JSON.stringify(v));
+    const filterPriority = ref(loadFilter('priority'));
+    const filterStatus = ref(loadFilter('status'));
+    const filterOrder = ref(loadFilter('order'));
+    const filterType = ref(loadFilter('type'));
+    const filterOwner = ref(loadFilter('owner'));
+    const filterModule = ref(loadFilter('module'));
+    const filterReq = ref(loadFilter('req'));
+    const filterReqIdPrefix = ref(localStorage.getItem('carry.f.reqIdPrefix') || '');
 
     const roles = [
       { key: 'boss',            icon: '👔', label: '老板' },
@@ -362,27 +423,38 @@ createApp({
 
     const getData = (id) => (review.value && review.value[id]) ? review.value[id] : {};
 
-    const cardHasTag = (meta, tag) => {
-      const d = getData(meta.id);
-      const merged = new Set([...(meta.tags || []), ...((d.items || []).flatMap(i => i.tags || []))]);
-      return merged.has(tag);
+    // 检查 item 是否通过 8 字段筛选
+    const itemPassesFilters = (item) => {
+      if (filterPriority.value.length && !filterPriority.value.includes(item.priority)) return false;
+      if (filterStatus.value.length && !filterStatus.value.includes(item.status)) return false;
+      if (filterOrder.value.length && !(item.clarifyOrder || []).some(o => filterOrder.value.includes(o))) return false;
+      if (filterType.value.length && !filterType.value.includes(item.clarifyType)) return false;
+      if (filterOwner.value.length && !filterOwner.value.includes(item.clarifyOwner)) return false;
+      if (filterModule.value.length && !filterModule.value.includes(item.module)) return false;
+      if (filterReq.value.length && !filterReq.value.includes(item.requirement)) return false;
+      if (filterReqIdPrefix.value && !(item.reqId || '').toLowerCase().startsWith('ln-' + filterReqIdPrefix.value.toLowerCase())) return false;
+      return true;
     };
-    const cardHasOrder = (meta, order) => {
+
+    // 单字段内 OR
+    const cardHasFilteredItems = (meta) => {
       const d = getData(meta.id);
-      return (d.items || []).some(i => (i.clarifyOrder || []).includes(order));
+      const items = d.items || [];
+      return items.some(itemPassesFilters);
     };
 
     const visibleCards = computed(() => {
       const registry = design.value?.cardMeta || [];
-      let v = registry.filter(c => (c.visibleTo || []).includes(currentRole.value));
-      if (activeTags.value.length) {
-        v = v.filter(c => activeTags.value.some(t => cardHasTag(c, t)));
-      }
-      if (activeOrders.value.length) {
-        v = v.filter(c => activeOrders.value.some(o => cardHasOrder(c, o)));
-      }
-      return v;
+      return registry.filter(c =>
+        (c.visibleTo || []).includes(currentRole.value) && cardHasFilteredItems(c)
+      );
     });
+
+    // 过滤后的明细(items 数)
+    const filteredItemsOf = (cardId) => {
+      const d = getData(cardId);
+      return (d.items || []).filter(itemPassesFilters);
+    };
 
     const cardLabel = (m) => {
       if (m.id === 'review') return '评审详情';
@@ -392,19 +464,42 @@ createApp({
 
     const cardSummary = computed(() => {
       return visibleCards.value.map(c => {
-        const d = getData(c.id);
-        return d.total ? `<b class="text-slate-50">${d.total}</b> ${cardLabel(c)}` : '';
+        const cnt = filteredItemsOf(c.id).length;
+        return cnt ? `<b class="text-slate-50">${cnt}</b> ${cardLabel(c)}` : '';
       }).filter(Boolean).join(' · ');
     });
 
     const totalFiltered = computed(() => {
-      return visibleCards.value.reduce((s, c) => s + (getData(c.id).total || 0), 0);
+      return visibleCards.value.reduce((s, c) => s + filteredItemsOf(c.id).length, 0);
     });
+
+    // 8 字段全集合(从数据聚合)
+    const allModules = computed(() => {
+      const set = new Set();
+      Object.values(review.value || {}).forEach(sec => {
+        if (sec && sec.items) sec.items.forEach(i => i.module && set.add(i.module));
+      });
+      return [...set].filter(Boolean).sort();
+    });
+
+    const hasAnyFilter = computed(() => {
+      return filterPriority.value.length || filterStatus.value.length || filterOrder.value.length ||
+        filterType.value.length || filterOwner.value.length || filterModule.value.length ||
+        filterReq.value.length || filterReqIdPrefix.value;
+    });
+
+    const filteredItemCount = computed(() => totalFiltered.value);
 
     const filterDesc = computed(() => {
       const parts = [];
-      if (activeTags.value.length) parts.push('标签=' + activeTags.value.join('|'));
-      if (activeOrders.value.length) parts.push('顺序=' + activeOrders.value.join('|'));
+      if (filterPriority.value.length) parts.push('优先级=' + filterPriority.value.join('|'));
+      if (filterStatus.value.length) parts.push('状态=' + filterStatus.value.join('|'));
+      if (filterOrder.value.length) parts.push('顺序=' + filterOrder.value.join('|'));
+      if (filterType.value.length) parts.push('类型=' + filterType.value.join('|'));
+      if (filterOwner.value.length) parts.push('角色=' + filterOwner.value.join('|'));
+      if (filterModule.value.length) parts.push('模块=' + filterModule.value.join('|'));
+      if (filterReq.value.length) parts.push('需求=' + filterReq.value.join('|'));
+      if (filterReqIdPrefix.value) parts.push('编号=LN-' + filterReqIdPrefix.value);
       return parts.join(', ');
     });
 
@@ -460,25 +555,26 @@ createApp({
       currentRole.value = r;
       localStorage.setItem('carry.role', r);
     };
-    const toggleTag = (t) => {
-      const i = activeTags.value.indexOf(t);
-      if (i >= 0) activeTags.value.splice(i, 1);
-      else activeTags.value.push(t);
-      localStorage.setItem('carry.tags', JSON.stringify(activeTags.value));
+    const toggleFilter = (field, value) => {
+      const map = {
+        priority: filterPriority, status: filterStatus, order: filterOrder,
+        type: filterType, owner: filterOwner, module: filterModule, req: filterReq
+      };
+      const r = map[field];
+      if (!r) return;
+      const i = r.value.indexOf(value);
+      if (i >= 0) r.value.splice(i, 1);
+      else r.value.push(value);
+      saveFilter(field, r.value);
     };
-    const clearTags = () => {
-      activeTags.value = [];
-      localStorage.setItem('carry.tags', JSON.stringify([]));
+    const onFilterReqId = () => {
+      localStorage.setItem('carry.f.reqIdPrefix', filterReqIdPrefix.value);
     };
-    const toggleOrder = (o) => {
-      const i = activeOrders.value.indexOf(o);
-      if (i >= 0) activeOrders.value.splice(i, 1);
-      else activeOrders.value.push(o);
-      localStorage.setItem('carry.orders', JSON.stringify(activeOrders.value));
-    };
-    const clearOrders = () => {
-      activeOrders.value = [];
-      localStorage.setItem('carry.orders', JSON.stringify([]));
+    const clearAllReviewFilters = () => {
+      [filterPriority, filterStatus, filterOrder, filterType, filterOwner, filterModule, filterReq].forEach(r => { r.value = []; });
+      filterReqIdPrefix.value = '';
+      ['priority', 'status', 'order', 'type', 'owner', 'module', 'req'].forEach(k => saveFilter(k, []));
+      localStorage.setItem('carry.f.reqIdPrefix', '');
     };
 
     const copyCard = async (cardId, ev) => {
@@ -536,14 +632,17 @@ createApp({
 
     return {
       dashboard, review, design, loading, loadError,
-      allTags: computed(() => design.value?.tags || []),
-      currentRole, activeTags, activeOrders,
+      currentRole,
+      filterPriority, filterStatus, filterOrder, filterType,
+      filterOwner, filterModule, filterReq, filterReqIdPrefix,
+      allModules, hasAnyFilter, filteredItemCount,
       roles, orderLevels, rolePrompt, roleLabel,
       visibleCards, cardSummary, totalFiltered, filterDesc,
+      filteredItemsOf,
       conclusionClass, refsItems,
       tagColor, tagDotColor, orderColor, priorityBadgeClass,
       cardLabel, getData,
-      switchRole, toggleTag, clearTags, toggleOrder, clearOrders,
+      switchRole, toggleFilter, onFilterReqId, clearAllReviewFilters,
       copyCard
     };
   }
