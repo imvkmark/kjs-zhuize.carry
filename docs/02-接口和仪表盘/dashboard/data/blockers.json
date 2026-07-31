@@ -9,7 +9,25 @@
       "owner": "开发TL",
       "severity": "critical",
       "since": "2026-07-25",
-      "visibleTo": ["dev", "boss", "product"]
+      "visibleTo": [
+        "dev",
+        "boss",
+        "product"
+      ],
+      "tags": [
+        "阻塞",
+        "支付"
+      ],
+      "priority": "P0",
+      "reqId": "LN-003",
+      "module": "m-未分类",
+      "requirement": "req-perf",
+      "status": "status-pending",
+      "clarifyType": "clarify-阻塞项",
+      "clarifyOrder": [
+        "A"
+      ],
+      "clarifyOwner": "开发"
     },
     {
       "id": "blk-02",
@@ -18,7 +36,25 @@
       "owner": "产品",
       "severity": "critical",
       "since": "2026-07-26",
-      "visibleTo": ["dev", "boss", "product"]
+      "visibleTo": [
+        "dev",
+        "boss",
+        "product"
+      ],
+      "tags": [
+        "阻塞",
+        "权限"
+      ],
+      "priority": "P0",
+      "reqId": "LN-004",
+      "module": "m-未分类",
+      "requirement": "req-sec",
+      "status": "status-pending",
+      "clarifyType": "clarify-阻塞项",
+      "clarifyOrder": [
+        "A"
+      ],
+      "clarifyOwner": "产品"
     },
     {
       "id": "blk-03",
@@ -27,11 +63,30 @@
       "owner": "前端",
       "severity": "high",
       "since": "2026-07-28",
-      "visibleTo": ["dev", "boss", "product"]
+      "visibleTo": [
+        "dev",
+        "boss",
+        "product"
+      ],
+      "tags": [
+        "阻塞"
+      ],
+      "priority": "P1",
+      "reqId": "LN-007",
+      "module": "m-未分类",
+      "requirement": "req-func",
+      "status": "status-pending",
+      "clarifyType": "clarify-阻塞项",
+      "clarifyOrder": [
+        "C"
+      ],
+      "clarifyOwner": "开发"
     }
   ],
   "urgency": "realtime",
   "moduleLabel": "阻塞项",
   "moduleIcon": "🚧",
-  "actions": ["detail"]
+  "actions": [
+    "detail"
+  ]
 }

@@ -1,4 +1,5 @@
 {
+  "tags": ["评审", "阻塞", "客户协作", "代码", "需求", "支付", "权限", "签字", "参考资料"],
   "cards": [
     {
       "id": "feedback",
@@ -8,7 +9,8 @@
       "visibleTo": ["customer_success", "boss", "product"],
       "defaultRole": "customer_success",
       "primaryAction": "copy",
-      "actions": ["copy", "detail"]
+      "actions": ["copy", "detail"],
+      "tags": ["客户协作", "需求"]
     },
     {
       "id": "questions",
@@ -18,7 +20,8 @@
       "visibleTo": ["customer_success", "product", "boss"],
       "defaultRole": "customer_success",
       "primaryAction": "copy",
-      "actions": ["copy", "detail"]
+      "actions": ["copy", "detail"],
+      "tags": ["客户协作"]
     },
     {
       "id": "external-deps",
@@ -28,7 +31,8 @@
       "visibleTo": ["customer_success", "product", "boss", "dev"],
       "defaultRole": "customer_success",
       "primaryAction": "copy",
-      "actions": ["copy", "detail"]
+      "actions": ["copy", "detail"],
+      "tags": ["客户协作", "阻塞"]
     },
     {
       "id": "blockers",
@@ -38,7 +42,8 @@
       "visibleTo": ["dev", "boss", "product"],
       "defaultRole": "dev",
       "primaryAction": "detail",
-      "actions": ["detail"]
+      "actions": ["detail"],
+      "tags": ["阻塞"]
     },
     {
       "id": "code-diff",
@@ -48,7 +53,8 @@
       "visibleTo": ["dev"],
       "defaultRole": "dev",
       "primaryAction": "detail",
-      "actions": ["detail"]
+      "actions": ["detail"],
+      "tags": ["代码"]
     },
     {
       "id": "gap",
@@ -58,7 +64,8 @@
       "visibleTo": ["product", "dev"],
       "defaultRole": "product",
       "primaryAction": "detail",
-      "actions": ["detail"]
+      "actions": ["detail"],
+      "tags": ["需求"]
     },
     {
       "id": "review",
@@ -69,6 +76,7 @@
       "defaultRole": "product",
       "primaryAction": "detail",
       "actions": ["detail"],
+      "tags": ["评审", "签字"],
       "externalLink": "v1.0-review-2026-07-30.html"
     }
   ]

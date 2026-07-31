@@ -114,6 +114,42 @@ body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono','PingFa
 .ref-link.pending:hover{border-color:var(--border);color:inherit}
 .ref-link .planned{font-size:8px;color:var(--amber);background:rgba(245,158,11,.12);padding:1px 5px;border-radius:4px;margin-left:auto;font-weight:600;letter-spacing:.3px}
 
+/* ========== TAG 标签筛选器 ========== */
+.tag-filter{margin-top:10px;display:flex;justify-content:center;gap:5px;flex-wrap:wrap;padding:0 12px}
+.tag-chip{padding:4px 10px;border:1px solid var(--border);border-radius:14px;background:rgba(15,23,42,.6);color:var(--muted);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:3px}
+.tag-chip:hover{border-color:var(--blue);color:#fff}
+.tag-chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tag-chip .x{font-size:11px;opacity:.6;margin-left:2px;line-height:1}
+.tag-clear{padding:4px 10px;border:1px dashed var(--border);border-radius:14px;background:transparent;color:var(--dim);font-family:inherit;font-size:10px;cursor:pointer;transition:all .15s}
+.tag-clear:hover{color:var(--red);border-color:var(--red)}
+
+/* Tag 配色(卡片内 chips) */
+.t-评审{background:rgba(96,165,250,.12);color:#60a5fa}
+.t-阻塞{background:rgba(239,68,68,.15);color:#fca5a5}
+.t-客户协作{background:rgba(251,113,133,.15);color:var(--rose)}
+.t-代码{background:rgba(34,211,238,.15);color:var(--cyan)}
+.t-需求{background:rgba(139,92,246,.15);color:var(--purple)}
+.t-支付{background:rgba(245,158,11,.15);color:#fcd34d}
+.t-权限{background:rgba(52,211,153,.15);color:#6ee7b7}
+.t-签字{background:rgba(251,146,60,.15);color:var(--orange)}
+.t-参考资料{background:rgba(100,116,139,.18);color:var(--muted)}
+
+/* 澄清顺序 4 级标签 */
+.t-A{background:rgba(239,68,68,.22);color:#fca5a5;border:1px solid rgba(239,68,68,.4);font-weight:700}
+.t-B{background:rgba(245,158,11,.18);color:#fcd34d;border:1px solid rgba(245,158,11,.4);font-weight:700}
+.t-C{background:rgba(96,165,250,.15);color:#93c5fd;border:1px solid rgba(96,165,250,.4);font-weight:700}
+.t-D{background:rgba(100,116,139,.18);color:var(--muted);border:1px solid rgba(100,116,139,.4);font-weight:700}
+.order-filter-label{font-size:10px;color:var(--muted);font-weight:600;margin-right:4px;display:inline-flex;align-items:center}
+
+/* 优先级徽章 */
+.nc-priority{position:absolute;top:12px;left:12px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.4px}
+.nc-priority.p0{background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid rgba(239,68,68,.4)}
+.nc-priority.p1{background:rgba(245,158,11,.18);color:#fcd34d;border:1px solid rgba(245,158,11,.4)}
+.nc-priority.p2{background:rgba(96,165,250,.15);color:#93c5fd;border:1px solid rgba(96,165,250,.4)}
+.nc-priority.p3{background:rgba(100,116,139,.18);color:var(--muted);border:1px solid rgba(100,116,139,.4)}
+
+.nc-reqid{font-size:9px;color:var(--cyan);font-family:'JetBrains Mono',monospace;font-weight:600;margin-right:4px}
+
 /* ========== DETAIL VIEW ========== */
 #detail-view{display:none}
 .back-btn{padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;margin-bottom:12px}
@@ -173,6 +209,16 @@ tr:hover td{background:rgba(51,65,85,.2)}
   <button class="role-btn" data-role="dev">👨‍💻 开发</button>
   <button class="role-btn" data-role="customer_success">🤝 客户经理</button>
   <button class="role-btn" data-role="newcomer">🆕 新人</button>
+</div>
+<div class="tag-filter" id="tag-filter">
+  <button class="tag-clear" onclick="clearTags()">✕ 清空筛选</button>
+</div>
+<div class="tag-filter" id="order-filter">
+  <span class="order-filter-label">澄清顺序:</span>
+  <button class="tag-chip t-A" data-order="A">A 文档阻断</button>
+  <button class="tag-chip t-B" data-order="B">B 流程阻断</button>
+  <button class="tag-chip t-C" data-order="C">C 范围明确</button>
+  <button class="tag-chip t-D" data-order="D">D 体验细节</button>
 </div>
 <div class="page-tools">
   <button onclick="exportPDF(this)">导出工作台 PDF</button>
@@ -253,9 +299,12 @@ tr:hover td{background:rgba(51,65,85,.2)}
    ================================================================ */
 const STATE = {
   currentRole: localStorage.getItem('carry.role') || 'product',
+  activeTags: JSON.parse(localStorage.getItem('carry.tags') || '[]'),
+  activeOrders: JSON.parse(localStorage.getItem('carry.orders') || '[]'),
   data: {},
   meta: {},
-  cardRegistry: []
+  cardRegistry: [],
+  allTags: []
 };
 
 const ROLE_PROMPTS = {
@@ -271,8 +320,7 @@ const ROLE_PROMPTS = {
    ================================================================ */
 async function loadAll() {
   try {
-    const [meta, review, feedback, questions, deps, blockers, diff, gap, refs, cards] = await Promise.all([
-      fetchJSON('data/review-v1.0.json'),
+    const [review, feedback, questions, deps, blockers, diff, gap, refs, cards] = await Promise.all([
       fetchJSON('data/review-v1.0.json'),
       fetchJSON('data/feedback.json'),
       fetchJSON('data/questions.json'),
@@ -285,6 +333,7 @@ async function loadAll() {
     ]);
     STATE.data = { review, feedback, questions, deps, blockers, diff, gap, refs };
     STATE.cardRegistry = cards.cards;
+    STATE.allTags = cards.tags || [];
     STATE.meta = review;
     renderAll();
   } catch (err) {
@@ -305,6 +354,8 @@ async function fetchJSON(path) {
    ================================================================ */
 function renderAll() {
   renderRoleBar();
+  renderTagFilter();
+  renderOrderFilter();
   renderStatusBar();
   renderTimeline();
   renderRolePrompt();
@@ -326,6 +377,82 @@ function switchRole(role) {
   renderRoleBar();
   renderRolePrompt();
   renderCards();
+}
+
+/* 标签筛选(多选 OR) */
+function toggleTag(tag) {
+  const i = STATE.activeTags.indexOf(tag);
+  if (i >= 0) STATE.activeTags.splice(i, 1);
+  else STATE.activeTags.push(tag);
+  localStorage.setItem('carry.tags', JSON.stringify(STATE.activeTags));
+  renderTagFilter();
+  renderCards();
+}
+
+function clearTags() {
+  STATE.activeTags = [];
+  localStorage.setItem('carry.tags', JSON.stringify(STATE.activeTags));
+  renderTagFilter();
+  renderCards();
+}
+
+function renderTagFilter() {
+  const bar = document.getElementById('tag-filter');
+  if (!bar) return;
+  const chips = STATE.allTags.map(t => {
+    const active = STATE.activeTags.includes(t);
+    return '<button class="tag-chip' + (active ? ' active' : '') + '" onclick="toggleTag(\'' + t + '\')">' +
+           '<span class="t-dot t-' + t + '" style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block"></span>' +
+           escapeHtml(t) +
+           (active ? ' <span class="x">×</span>' : '') +
+           '</button>';
+  }).join('');
+  bar.innerHTML = chips + (STATE.activeTags.length
+    ? '<button class="tag-clear" onclick="clearTags()">✕ 清空筛选</button>'
+    : '');
+}
+
+function toggleOrder(order) {
+  const i = STATE.activeOrders.indexOf(order);
+  if (i >= 0) STATE.activeOrders.splice(i, 1);
+  else STATE.activeOrders.push(order);
+  localStorage.setItem('carry.orders', JSON.stringify(STATE.activeOrders));
+  renderOrderFilter();
+  renderCards();
+}
+
+function clearOrders() {
+  STATE.activeOrders = [];
+  localStorage.setItem('carry.orders', JSON.stringify(STATE.activeOrders));
+  renderOrderFilter();
+  renderCards();
+}
+
+function renderOrderFilter() {
+  const bar = document.getElementById('order-filter');
+  if (!bar) return;
+  const labels = { A: 'A 文档阻断', B: 'B 流程阻断', C: 'C 范围明确', D: 'D 体验细节' };
+  bar.querySelectorAll('.tag-chip[data-order]').forEach(btn => {
+    const order = btn.dataset.order;
+    const active = STATE.activeOrders.includes(order);
+    btn.classList.toggle('active', active);
+    btn.onclick = () => toggleOrder(order);
+    btn.innerHTML = active ? labels[order] + ' <span class="x">×</span>' : labels[order];
+    btn.style.boxShadow = active ? '0 0 0 2px var(--blue)' : '';
+  });
+  // 末尾追加清空按钮
+  let clearBtn = bar.querySelector('.order-clear');
+  if (STATE.activeOrders.length) {
+    if (!clearBtn) {
+      clearBtn = document.createElement('button');
+      clearBtn.className = 'tag-clear';
+      clearBtn.textContent = '✕ 清空';
+      clearBtn.onclick = clearOrders;
+      bar.appendChild(clearBtn);
+    }
+  } else if (clearBtn) {
+    clearBtn.remove();
+  }
 }
 
 function renderStatusBar() {
@@ -381,11 +508,32 @@ function getRoleLabel(role) {
 
 function renderCards() {
   const grid = document.getElementById('card-grid');
-  const visibleCards = STATE.cardRegistry.filter(c =>
+  let visibleCards = STATE.cardRegistry.filter(c =>
     c.visibleTo.includes(STATE.currentRole)
   );
+  if (STATE.activeTags.length) {
+    visibleCards = visibleCards.filter(c => {
+      const data = STATE.data[c.id === 'review' ? 'review' : c.id === 'external-deps' ? 'deps' : c.id];
+      const itemTags = (data && data.items) ? data.items.flatMap(i => i.tags || []) : [];
+      const merged = new Set([...(c.tags || []), ...itemTags]);
+      return Array.from(merged).some(t => STATE.activeTags.includes(t));
+    });
+  }
+  if (STATE.activeOrders.length) {
+    visibleCards = visibleCards.filter(c => {
+      const data = STATE.data[c.id === 'review' ? 'review' : c.id === 'external-deps' ? 'deps' : c.id];
+      const orders = (data && data.items) ? data.items.flatMap(i => i.clarifyOrder || []) : [];
+      return orders.some(o => STATE.activeOrders.includes(o));
+    });
+  }
   if (!visibleCards.length) {
-    grid.innerHTML = '<div class="empty-msg">当前角色无可见子项,请切换角色</div>';
+    const filters = [];
+    if (STATE.activeTags.length) filters.push('标签=' + STATE.activeTags.join('|'));
+    if (STATE.activeOrders.length) filters.push('顺序=' + STATE.activeOrders.join('|'));
+    const msg = filters.length
+      ? '当前角色 + [' + filters.join(', ') + '] 无可见卡片'
+      : '当前角色无可见子项,请切换角色';
+    grid.innerHTML = '<div class="empty-msg">' + msg + '</div>';
     return;
   }
   grid.innerHTML = visibleCards.map(renderCard).join('');
@@ -399,11 +547,26 @@ function renderCard(meta) {
   const urgencyClass = 'nc-' + (meta.urgency || 'quarterly');
   const desc = renderCardDesc(meta.id, data);
   const actions = renderCardActions(meta, data);
+  // 聚合 tags + clarifyOrder + 最高 priority
+  const itemTags = (data.items || []).flatMap(i => i.tags || []);
+  const mergedTags = Array.from(new Set([...(meta.tags || []), ...itemTags]));
+  const itemOrders = (data.items || []).flatMap(i => i.clarifyOrder || []);
+  const uniqueOrders = Array.from(new Set(itemOrders));
+  const prios = (data.items || []).map(i => i.priority).filter(Boolean);
+  const topPrio = prios.includes('P0') ? 'P0' : prios.includes('P1') ? 'P1' : prios.includes('P2') ? 'P2' : prios.includes('P3') ? 'P3' : '';
+  const tagsHtml = mergedTags.map(t =>
+    '<span class="nc-tag t-' + t + '">' + escapeHtml(t) + '</span>'
+  ).join('');
+  const ordersHtml = uniqueOrders.slice(0, 4).map(o =>
+    '<span class="nc-tag t-' + o + '">' + o + '</span>'
+  ).join('');
   return '<div class="nav-card" data-card-id="' + meta.id + '">' +
+    (topPrio ? '<span class="nc-priority ' + topPrio.toLowerCase() + '">' + topPrio + '</span>' : '') +
     '<span class="nc-count ' + urgencyClass + '">' + count + ' 项</span>' +
     '<span class="nc-icon">' + meta.icon + '</span>' +
     '<span class="nc-title">' + escapeHtml(meta.id === 'review' ? '评审详情' : (data.moduleLabel || '')) + '</span>' +
     '<span class="nc-desc">' + desc + '</span>' +
+    ((tagsHtml || ordersHtml) ? '<div class="nc-bar">' + tagsHtml + ordersHtml + '</div>' : '') +
     actions +
   '</div>';
 }
@@ -424,7 +587,6 @@ function renderCardDesc(id, data) {
 function renderCardActions(meta, data) {
   let html = '<div class="nc-actions">';
   if (meta.actions.includes('copy') && data.items && data.items.length) {
-    const copyTexts = data.items.map(i => i.copyText || (i.content || i.question || i.name || '')).join('\n');
     html += '<button class="nc-action" data-action="copy" data-card="' + meta.id + '">📋 一键复制</button>';
   }
   if (meta.actions.includes('detail')) {
@@ -561,54 +723,71 @@ function getCardIcon(id) {
 
 function getDetailHeaders(id) {
   switch (id) {
-    case 'feedback':    return '<th>作者</th><th>内容</th><th>模块</th><th>状态</th>';
-    case 'questions':   return '<th>编号</th><th>问题</th><th>询问</th><th>状态</th><th>截止</th>';
-    case 'external-deps':return '<th>名称</th><th>依赖方</th><th>影响</th><th>状态</th><th>预计</th>';
-    case 'blockers':    return '<th>标题</th><th>阻塞内容</th><th>负责人</th><th>严重度</th><th>开始</th>';
-    case 'code-diff':   return '<th>模块</th><th>文件</th><th>类型</th><th>+/-</th><th>提交</th>';
-    case 'gap':         return '<th>模块</th><th>PRD</th><th>预期</th><th>实际</th><th>类型</th><th>优先级</th>';
+    case 'feedback':    return '<th>reqId</th><th>作者</th><th>内容</th><th>模块</th><th>状态</th><th>澄清类型</th><th>顺序</th><th>负责人</th>';
+    case 'questions':   return '<th>reqId</th><th>问题</th><th>询问</th><th>状态</th><th>截止</th><th>模块</th><th>顺序</th>';
+    case 'external-deps':return '<th>reqId</th><th>名称</th><th>依赖方</th><th>影响</th><th>状态</th><th>预计</th><th>顺序</th>';
+    case 'blockers':    return '<th>reqId</th><th>标题</th><th>阻塞内容</th><th>负责人</th><th>严重度</th><th>顺序</th>';
+    case 'code-diff':   return '<th>reqId</th><th>模块</th><th>文件</th><th>类型</th><th>+/-</th><th>提交</th><th>顺序</th>';
+    case 'gap':         return '<th>reqId</th><th>模块</th><th>PRD</th><th>预期</th><th>实际</th><th>类型</th><th>优先级</th><th>顺序</th>';
     case 'review':      return '<th>字段</th><th>值</th>';
     default: return '';
   }
 }
 
 function getDetailRow(id, item) {
+  const reqIdCell = '<td><span class="nc-reqid">' + escapeHtml(item.reqId || '-') + '</span></td>';
+  const orderCells = '<td>' + (item.clarifyOrder || []).map(o =>
+    '<span class="nc-tag t-' + o + '" style="margin-right:2px">' + o + '</span>'
+  ).join('') + '</td>';
   switch (id) {
     case 'feedback':
-      return '<td>' + escapeHtml(item.author) + '</td><td>' + escapeHtml(item.content) + '</td>' +
+      return reqIdCell +
+             '<td>' + escapeHtml(item.author) + '</td><td>' + escapeHtml(item.content) + '</td>' +
              '<td>' + escapeHtml(item.module || '-') + '</td>' +
-             '<td><span class="badge b-' + (item.status === 'pending' ? 'pending' : 'ok') + '">' +
-             (item.status === 'pending' ? '🟡 待回复' : item.status === 'replied' ? '✅ 已回复' : '✅ 已解决') + '</span></td>';
+             '<td><span class="badge b-' + (item.status === 'status-pending' ? 'pending' : 'ok') + '">' +
+             (item.status === 'status-pending' ? '🟡 待回复' : item.status === 'status-replied' ? '✅ 已回复' : '✅ 已解决') + '</span></td>' +
+             '<td>' + escapeHtml(item.clarifyType || '-') + '</td>' +
+             orderCells +
+             '<td>' + escapeHtml(item.clarifyOwner || '-') + '</td>';
     case 'questions':
-      return '<td>' + escapeHtml(item.id) + '</td><td>' + escapeHtml(item.question) + '</td>' +
+      return reqIdCell +
+             '<td>' + escapeHtml(item.question) + '</td>' +
              '<td>' + escapeHtml(item.askedTo) + '</td>' +
-             '<td><span class="badge b-' + (item.status === 'waiting_reply' ? 'waiting' : 'ok') + '">' +
-             (item.status === 'waiting_reply' ? '🟡 等待' : item.status === 'replied' ? '✅ 已回复' : '🔴 升级') + '</span></td>' +
-             '<td>' + escapeHtml(item.deadline || '-') + '</td>';
+             '<td><span class="badge b-' + (item.status === 'status-pending' ? 'waiting' : 'ok') + '">' +
+             (item.status === 'status-pending' ? '🟡 等待' : item.status === 'status-replied' ? '✅ 已回复' : '🔴 升级') + '</span></td>' +
+             '<td>' + escapeHtml(item.deadline || '-') + '</td>' +
+             '<td>' + escapeHtml(item.module || '-') + '</td>' +
+             orderCells;
     case 'external-deps':
-      return '<td>' + escapeHtml(item.name) + '</td><td>' + escapeHtml(item.dependsOn) + '</td>' +
+      return reqIdCell +
+             '<td>' + escapeHtml(item.name) + '</td><td>' + escapeHtml(item.dependsOn) + '</td>' +
              '<td>' + escapeHtml(item.impact || '-') + '</td>' +
-             '<td><span class="badge b-' + item.status + '">' + statusLabel(item.status) + '</span></td>' +
-             '<td>' + escapeHtml(item.expectedDate || '-') + '</td>';
+             '<td><span class="badge b-' + (item.status || '').replace('status-','') + '">' + statusLabel((item.status || '').replace('status-','')) + '</span></td>' +
+             '<td>' + escapeHtml(item.expectedDate || '-') + '</td>' +
+             orderCells;
     case 'blockers':
-      return '<td>' + escapeHtml(item.title) + '</td><td>' + escapeHtml(item.blockingWhat) + '</td>' +
+      return reqIdCell +
+             '<td>' + escapeHtml(item.title) + '</td><td>' + escapeHtml(item.blockingWhat) + '</td>' +
              '<td>' + escapeHtml(item.owner) + '</td>' +
              '<td><span class="badge b-' + (item.severity === 'critical' ? 'p0' : 'p1') + '">' +
              (item.severity === 'critical' ? '🔴 严重' : '🟡 高') + '</span></td>' +
-             '<td>' + escapeHtml(item.since) + '</td>';
+             orderCells;
     case 'code-diff':
-      const sign = (item.linesAdded || 0) + '/' + (item.linesRemoved || 0);
-      return '<td>' + escapeHtml(item.module) + '</td><td><code style="font-size:10px">' +
+      return reqIdCell +
+             '<td>' + escapeHtml(item.module) + '</td><td><code style="font-size:10px">' +
              escapeHtml(item.filePath) + '</code></td>' +
              '<td>' + escapeHtml(item.changeType) + '</td>' +
              '<td style="color:var(--green)">+' + item.linesAdded + ' <span style="color:var(--red)">-' + item.linesRemoved + '</span></td>' +
-             '<td><code style="font-size:10px">' + escapeHtml(item.commitSha) + '</code></td>';
+             '<td><code style="font-size:10px">' + escapeHtml(item.commitSha) + '</code></td>' +
+             orderCells;
     case 'gap':
-      return '<td>' + escapeHtml(item.module) + '</td><td>' + escapeHtml(item.prdRef) + '</td>' +
+      return reqIdCell +
+             '<td>' + escapeHtml(item.module) + '</td><td>' + escapeHtml(item.prdRef) + '</td>' +
              '<td>' + escapeHtml(item.expected) + '</td>' +
              '<td>' + escapeHtml(item.actual) + '</td>' +
              '<td>' + escapeHtml(item.gapType) + '</td>' +
-             '<td><span class="badge b-' + item.priority.toLowerCase() + '">' + item.priority + '</span></td>';
+             '<td><span class="badge b-' + (item.priority || 'p1').toLowerCase() + '">' + (item.priority || '-') + '</span></td>' +
+             orderCells;
     case 'review':
       return '<td colspan="2">此卡片为评审快照,完整数据见 <a href="v1.0-review-2026-07-30.html">评审详情页</a></td>';
     default: return '<td>' + JSON.stringify(item) + '</td>';
@@ -616,7 +795,7 @@ function getDetailRow(id, item) {
 }
 
 function statusLabel(s) {
-  return { waiting:'🟡 等待', confirmed:'✅ 已确认', blocked:'🔴 阻塞' }[s] || s;
+  return { waiting:'🟡 等待', confirmed:'✅ 已确认', blocked:'🔴 阻塞', resolved:'✅ 已解决' }[s] || s;
 }
 
 function showGrid() {

@@ -3,41 +3,88 @@
   "updatedAt": "2026-07-30",
   "items": [
     {
-      "id": "gap-01",
-      "module": "客服工单",
-      "prdRef": "PRD-2.3.1",
-      "expected": "工单需支持批量转派",
-      "actual": "当前仅支持单条转派",
-      "gapType": "missing_feature",
-      "owner": "产品+开发",
-      "priority": "P1",
-      "visibleTo": ["product", "dev"]
-    },
-    {
       "id": "gap-02",
-      "module": "追责核心",
+      "module": "m-订单管理",
       "prdRef": "PRD-5.4.2",
       "expected": "状态机需支持还号换绑幂等校验",
       "actual": "当前无幂等,可能重复处理",
       "gapType": "missing_feature",
       "owner": "开发TL",
       "priority": "P0",
-      "visibleTo": ["product", "dev"]
+      "visibleTo": [
+        "product",
+        "dev"
+      ],
+      "tags": [
+        "需求",
+        "阻塞"
+      ],
+      "reqId": "LN-001",
+      "requirement": "req-func",
+      "status": "status-pending",
+      "clarifyType": "clarify-GAP清单",
+      "clarifyOrder": [
+        "B"
+      ],
+      "clarifyOwner": "开发"
     },
     {
       "id": "gap-03",
-      "module": "支付",
+      "module": "m-支付流程",
       "prdRef": "PRD-7.1.3",
       "expected": "多次部分退款应累计到原订单",
       "actual": "当前单次退款会替换原记录",
       "gapType": "inconsistent",
       "owner": "开发TL",
       "priority": "P0",
-      "visibleTo": ["product", "dev"]
+      "visibleTo": [
+        "product",
+        "dev"
+      ],
+      "tags": [
+        "需求",
+        "支付"
+      ],
+      "reqId": "LN-002",
+      "requirement": "req-perf",
+      "status": "status-pending",
+      "clarifyType": "clarify-GAP清单",
+      "clarifyOrder": [
+        "B"
+      ],
+      "clarifyOwner": "开发"
+    },
+    {
+      "id": "gap-01",
+      "module": "m-客户服务",
+      "prdRef": "PRD-2.3.1",
+      "expected": "工单需支持批量转派",
+      "actual": "当前仅支持单条转派",
+      "gapType": "missing_feature",
+      "owner": "产品+开发",
+      "priority": "P1",
+      "visibleTo": [
+        "product",
+        "dev"
+      ],
+      "tags": [
+        "需求",
+        "GAP"
+      ],
+      "reqId": "LN-006",
+      "requirement": "req-func",
+      "status": "status-pending",
+      "clarifyType": "clarify-GAP清单",
+      "clarifyOrder": [
+        "C"
+      ],
+      "clarifyOwner": "产品"
     }
   ],
   "urgency": "weekly",
   "moduleLabel": "GAP 清单",
   "moduleIcon": "📐",
-  "actions": ["detail"]
+  "actions": [
+    "detail"
+  ]
 }
