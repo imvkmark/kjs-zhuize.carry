@@ -25,18 +25,6 @@
     · 最近更新 <b class="text-slate-300">{{ dashboard?.reviewDate || '--' }}</b>
   </p>
 
-  <!-- 角色切换 -->
-  <div class="mt-3 flex flex-wrap justify-center gap-1.5">
-    <button v-for="r in roles" :key="r.key"
-      @click="switchRole(r.key)"
-      :class="['px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all',
-               currentRole === r.key
-                 ? 'bg-blue-500 border-blue-500 text-white'
-                 : 'bg-slate-900/60 border-slate-700 text-slate-300 hover:border-blue-500 hover:text-white']">
-      {{ r.icon }} {{ r.label }}
-    </button>
-  </div>
-
   <!-- 全局操作 -->
   <div class="mt-3 flex flex-wrap justify-center gap-2">
     <button class="px-3 py-1.5 border border-slate-700 bg-slate-900/80 rounded-lg text-xs font-semibold text-slate-300 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition-all">
@@ -140,27 +128,40 @@
     </div>
   </div>
 
-  <!-- SECTION 3: V1.0 评审 -->
-  <div class="text-[13px] font-bold text-slate-50 mt-3.5 mb-2 pb-1.5 border-b border-slate-700 flex items-center gap-1.5">
-    📋 V1.0 评审
-    <span class="text-[10px] text-slate-400 font-normal">
-      当前角色:{{ roleLabel(currentRole) }} · 显示 {{ visibleCards.length }} 张卡 · {{ filteredItemCount }} 条明细
+  <!-- SECTION 3: V1.0 评审(下拉触发器) -->
+  <div class="text-[13px] font-bold text-slate-50 mt-3.5 mb-2 pb-1.5 border-b border-slate-700 flex items-center gap-1.5 flex-wrap">
+    <button @click="reviewPanelOpen = !reviewPanelOpen"
+      class="flex items-center gap-1.5 px-2 py-1 rounded border border-slate-700 bg-slate-800/60 hover:bg-slate-700 hover:border-blue-500 transition-all">
+      <span>📋 V1.0 评审</span>
+      <span class="text-[10px] font-normal text-slate-400">
+        {{ roleLabel(currentRole) }} · {{ visibleCards.length }} 张卡 · {{ filteredItemCount }} 条明细
+      </span>
+      <span :class="['text-[10px] text-slate-400 transition-transform', reviewPanelOpen ? 'rotate-180' : '']">⌄</span>
+    </button>
+    <span v-if="hasAnyFilter"
+      class="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/15 border border-blue-500/40 text-blue-300 font-bold">
+      {{ filterPriority.length + filterStatus.length + filterOrder.length + filterType.length + filterOwner.length + filterModule.length + filterReq.length + (filterReqIdPrefix ? 1 : 0) }} 筛
     </span>
   </div>
 
-  <div class="bg-blue-500/10 border border-blue-500/30 border-l-4 border-l-blue-500 rounded-md px-3 py-2.5 mb-2.5 text-[11px] text-slate-200">
-    <b class="text-blue-300">{{ roleLabel(currentRole) }} 视角:</b> {{ rolePrompt }}
-  </div>
+  <!-- V1.0 评审下拉(角色 + 8 字段筛选) -->
+  <div v-if="reviewPanelOpen" class="bg-slate-800/50 border border-slate-700 rounded-lg p-3 mb-3.5">
 
-  <div class="bg-blue-500/5 border border-blue-500/20 border-l-4 border-l-blue-500 rounded-md px-3.5 py-2.5 mb-2.5 text-[11px] text-slate-200 leading-relaxed">
-    <b class="text-blue-300">汇总</b> · 当前角色 [<b class="text-blue-300">{{ roleLabel(currentRole) }}</b>] 可见
-    <b class="text-slate-50">{{ visibleCards.length }}</b> / {{ design?.cardMeta?.length || 0 }} 张卡 · 总待澄清
-    <b class="text-slate-50">{{ totalFiltered }}</b> 项<br>
-    <span class="text-slate-400">{{ cardSummary }}</span>
-  </div>
+    <!-- 角色切换 -->
+    <div class="mb-3 pb-2 border-b border-dashed border-slate-700">
+      <div class="text-[10px] text-slate-500 font-semibold mb-1.5">角色</div>
+      <div class="flex flex-wrap gap-1.5">
+        <button v-for="r in roles" :key="r.key"
+          @click="switchRole(r.key)"
+          :class="['px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-all',
+                   currentRole === r.key
+                     ? 'bg-blue-500 border-blue-500 text-white'
+                     : 'bg-slate-900/60 border-slate-700 text-slate-300 hover:border-blue-500 hover:text-white']">
+          {{ r.icon }} {{ r.label }}
+        </button>
+      </div>
+    </div>
 
-  <!-- V1.0 评审内部 8 字段筛选 -->
-  <div class="bg-slate-800/50 border border-slate-700 rounded-lg p-3 mb-3.5">
     <div class="text-[11px] font-bold text-slate-50 mb-2 flex items-center justify-between flex-wrap gap-2">
       <span>🔍 评审内筛选(8 字段 · 多选 OR)</span>
       <button v-if="hasAnyFilter" @click="clearAllReviewFilters"
@@ -254,6 +255,17 @@
         class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-900/60 border border-slate-700 text-slate-200 focus:border-blue-500 outline-none w-40 placeholder:text-slate-600" />
       <span v-if="filterReqIdPrefix" class="text-[10px] text-slate-500">匹配: {{ filterReqIdPrefix }}*</span>
     </div>
+  </div>
+
+  <div class="bg-blue-500/10 border border-blue-500/30 border-l-4 border-l-blue-500 rounded-md px-3 py-2.5 mb-2.5 text-[11px] text-slate-200">
+    <b class="text-blue-300">{{ roleLabel(currentRole) }} 视角:</b> {{ rolePrompt }}
+  </div>
+
+  <div class="bg-blue-500/5 border border-blue-500/20 border-l-4 border-l-blue-500 rounded-md px-3.5 py-2.5 mb-2.5 text-[11px] text-slate-200 leading-relaxed">
+    <b class="text-blue-300">汇总</b> · 当前角色 [<b class="text-blue-300">{{ roleLabel(currentRole) }}</b>] 可见
+    <b class="text-slate-50">{{ visibleCards.length }}</b> / {{ design?.cardMeta?.length || 0 }} 张卡 · 总待澄清
+    <b class="text-slate-50">{{ totalFiltered }}</b> 项<br>
+    <span class="text-slate-400">{{ cardSummary }}</span>
   </div>
 
   <!-- 加载中 -->
@@ -394,6 +406,10 @@ createApp({
     const filterModule = ref(loadFilter('module'));
     const filterReq = ref(loadFilter('req'));
     const filterReqIdPrefix = ref(localStorage.getItem('carry.f.reqIdPrefix') || '');
+
+    // V1.0 评审下拉面板开合(默认展开)
+    const reviewPanelOpen = ref(localStorage.getItem('carry.reviewPanelOpen') !== 'false');
+    watch(reviewPanelOpen, (v) => localStorage.setItem('carry.reviewPanelOpen', String(v)));
 
     const roles = [
       { key: 'boss',            icon: '👔', label: '老板' },
@@ -632,6 +648,7 @@ createApp({
     return {
       dashboard, review, design, loading, loadError,
       currentRole,
+      reviewPanelOpen,
       filterPriority, filterStatus, filterOrder, filterType,
       filterOwner, filterModule, filterReq, filterReqIdPrefix,
       allModules, hasAnyFilter, filteredItemCount,
