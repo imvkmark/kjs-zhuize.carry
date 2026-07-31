@@ -313,12 +313,12 @@
         </div>
       </div>
 
-      <div v-if="meta.actions && meta.actions.includes('copy') && (getData(meta.id).items || []).length"
+      <div v-if="meta.actions && meta.actions.includes('copy') && filteredItemsOf(meta.id).length"
         class="mt-2.5 flex gap-1.5 flex-wrap">
         <button @click="copyCard(meta.id, $event)"
           :data-card="meta.id"
           class="px-2 py-1 text-[10px] font-semibold border border-slate-700 rounded bg-slate-900/60 text-blue-400 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all">
-          📋 一键复制
+          📋 一键复制({{ filteredItemsOf(meta.id).length }})
         </button>
       </div>
       <div v-if="meta.actions && meta.actions.includes('detail') && meta.externalLink"
@@ -333,7 +333,7 @@
 
   <!-- 空状态 -->
   <div v-else class="border border-dashed border-slate-700 rounded-md p-5 text-center text-slate-500 text-[11px]">
-    <template v-if="activeTags.length || activeOrders.length">
+    <template v-if="hasAnyFilter">
       当前角色 + [{{ filterDesc }}] 无可见子项
     </template>
     <template v-else>当前角色无可见子项,请切换角色</template>
@@ -578,8 +578,7 @@ createApp({
     };
 
     const copyCard = async (cardId, ev) => {
-      const d = getData(cardId);
-      const items = d.items || [];
+      const items = filteredItemsOf(cardId);
       if (!items.length) return;
       const text = items.map(i => i.copyText || (i.content || i.question || i.name || i.title || '')).join('\n');
       const btn = ev.currentTarget;
