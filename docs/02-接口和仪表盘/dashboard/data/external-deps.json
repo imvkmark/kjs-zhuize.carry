@@ -1,0 +1,43 @@
+{
+  "total": 15,
+  "updatedAt": "2026-07-30",
+  "items": [
+    {
+      "id": "dep-01",
+      "name": "支付网关 API 联调环境",
+      "dependsOn": "第三方支付团队",
+      "status": "waiting",
+      "impact": "阻塞支付模块开发",
+      "owner": "项目经理",
+      "expectedDate": "2026-08-05",
+      "copyText": "【外部依赖】支付网关 API 联调环境(等待第三方支付团队,预计 08-05,阻塞支付模块开发)",
+      "visibleTo": ["customer_success", "product", "boss", "dev"]
+    },
+    {
+      "id": "dep-02",
+      "name": "人脸服务合规备案",
+      "dependsOn": "法务+第三方人脸服务",
+      "status": "waiting",
+      "impact": "阻塞 H5 人脸采集功能",
+      "owner": "项目经理",
+      "expectedDate": "2026-08-15",
+      "copyText": "【外部依赖】人脸服务合规备案(等待法务+第三方人脸服务,预计 08-15,阻塞 H5 人脸采集)",
+      "visibleTo": ["customer_success", "product", "boss"]
+    },
+    {
+      "id": "dep-03",
+      "name": "老系统数据迁移策略",
+      "dependsOn": "客户-数据团队",
+      "status": "blocked",
+      "impact": "阻塞数据库正式建表",
+      "owner": "项目经理",
+      "expectedDate": "2026-08-20",
+      "copyText": "【外部依赖】老系统数据迁移策略(阻塞中,客户-数据团队,预计 08-20,阻塞数据库正式建表)",
+      "visibleTo": ["customer_success", "product", "boss", "dev"]
+    }
+  ],
+  "urgency": "realtime",
+  "moduleLabel": "外部依赖",
+  "moduleIcon": "🔗",
+  "actions": ["copy", "detail"]
+}

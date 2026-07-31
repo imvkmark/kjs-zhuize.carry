@@ -1,0 +1,40 @@
+{
+  "total": 35,
+  "updatedAt": "2026-07-30",
+  "items": [
+    {
+      "id": "q-15",
+      "question": "支付分期是否支持提前结清?",
+      "askedTo": "客户-财务负责人",
+      "status": "waiting_reply",
+      "raisedAt": "2026-07-26",
+      "deadline": "2026-08-13",
+      "copyText": "【待回复】Q15:支付分期是否支持提前结清?(截止 08-13)",
+      "visibleTo": ["customer_success", "product", "boss"]
+    },
+    {
+      "id": "q-16",
+      "question": "超额收款后,系统自动退款还是人工触发?",
+      "askedTo": "客户-财务负责人",
+      "status": "waiting_reply",
+      "raisedAt": "2026-07-26",
+      "deadline": "2026-08-13",
+      "copyText": "【待回复】Q16:超额收款后,系统自动退款还是人工触发?(截止 08-13)",
+      "visibleTo": ["customer_success", "product", "boss"]
+    },
+    {
+      "id": "q-17",
+      "question": "多次部分退款是否需要审批流?",
+      "askedTo": "客户-财务负责人",
+      "status": "waiting_reply",
+      "raisedAt": "2026-07-27",
+      "deadline": "2026-08-13",
+      "copyText": "【待回复】Q17:多次部分退款是否需要审批流?(截止 08-13)",
+      "visibleTo": ["customer_success", "product", "boss"]
+    }
+  ],
+  "urgency": "realtime",
+  "moduleLabel": "问题清单",
+  "moduleIcon": "❓",
+  "actions": ["copy", "detail"]
+}

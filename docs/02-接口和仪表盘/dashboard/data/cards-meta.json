@@ -1,0 +1,68 @@
+{
+  "cards": [
+    {
+      "id": "feedback",
+      "dataFile": "feedback.json",
+      "icon": "💬",
+      "urgency": "realtime",
+      "visibleTo": ["customer_success", "boss", "product"],
+      "defaultRole": "customer_success",
+      "primaryAction": "copy"
+    },
+    {
+      "id": "questions",
+      "dataFile": "questions.json",
+      "icon": "❓",
+      "urgency": "realtime",
+      "visibleTo": ["customer_success", "product", "boss"],
+      "defaultRole": "customer_success",
+      "primaryAction": "copy"
+    },
+    {
+      "id": "external-deps",
+      "dataFile": "external-deps.json",
+      "icon": "🔗",
+      "urgency": "realtime",
+      "visibleTo": ["customer_success", "product", "boss", "dev"],
+      "defaultRole": "customer_success",
+      "primaryAction": "copy"
+    },
+    {
+      "id": "blockers",
+      "dataFile": "blockers.json",
+      "icon": "🚧",
+      "urgency": "realtime",
+      "visibleTo": ["dev", "boss", "product"],
+      "defaultRole": "dev",
+      "primaryAction": "detail"
+    },
+    {
+      "id": "code-diff",
+      "dataFile": "code-diff.json",
+      "icon": "🔀",
+      "urgency": "weekly",
+      "visibleTo": ["dev"],
+      "defaultRole": "dev",
+      "primaryAction": "detail"
+    },
+    {
+      "id": "gap",
+      "dataFile": "gap.json",
+      "icon": "📐",
+      "urgency": "weekly",
+      "visibleTo": ["product", "dev"],
+      "defaultRole": "product",
+      "primaryAction": "detail"
+    },
+    {
+      "id": "review",
+      "dataFile": "review-v1.0.json",
+      "icon": "📄",
+      "urgency": "quarterly",
+      "visibleTo": ["boss", "product", "dev", "customer_success", "newcomer"],
+      "defaultRole": "product",
+      "primaryAction": "detail",
+      "externalLink": "v1.0-review-2026-07-30.html"
+    }
+  ]
+}

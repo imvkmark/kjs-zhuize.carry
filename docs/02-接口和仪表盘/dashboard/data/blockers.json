@@ -1,0 +1,37 @@
+{
+  "total": 3,
+  "updatedAt": "2026-07-30",
+  "items": [
+    {
+      "id": "blk-01",
+      "title": "支付网关沙箱账号未开通",
+      "blockingWhat": "支付模块联调无法启动",
+      "owner": "开发TL",
+      "severity": "critical",
+      "since": "2026-07-25",
+      "visibleTo": ["dev", "boss", "product"]
+    },
+    {
+      "id": "blk-02",
+      "title": "角色权限矩阵未定案",
+      "blockingWhat": "全部权限相关开发",
+      "owner": "产品",
+      "severity": "critical",
+      "since": "2026-07-26",
+      "visibleTo": ["dev", "boss", "product"]
+    },
+    {
+      "id": "blk-03",
+      "title": "H5 设备能力降级方案缺失",
+      "blockingWhat": "H5 端非功能验收无法进行",
+      "owner": "前端",
+      "severity": "high",
+      "since": "2026-07-28",
+      "visibleTo": ["dev", "boss", "product"]
+    }
+  ],
+  "urgency": "realtime",
+  "moduleLabel": "阻塞项",
+  "moduleIcon": "🚧",
+  "actions": ["detail"]
+}

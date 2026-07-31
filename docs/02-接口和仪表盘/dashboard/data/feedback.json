@@ -1,0 +1,41 @@
+{
+  "total": 26,
+  "updatedAt": "2026-07-30",
+  "source": "钉钉群 · 项目评审群",
+  "items": [
+    {
+      "id": "fb-01",
+      "author": "客户-王经理",
+      "content": "账号找回流程能否加人脸核验?",
+      "module": "账号安全",
+      "status": "pending",
+      "createdAt": "2026-07-29T14:22:00+08:00",
+      "copyText": "【反馈】账号安全-王经理:账号找回流程能否加人脸核验?",
+      "visibleTo": ["customer_success", "boss", "product"]
+    },
+    {
+      "id": "fb-02",
+      "author": "业务-李主管",
+      "content": "追责员侧基础资料手机号是否同步展示?",
+      "module": "追责员",
+      "status": "pending",
+      "createdAt": "2026-07-29T16:10:00+08:00",
+      "copyText": "【反馈】追责员-李主管:追责员侧基础资料手机号是否同步展示?",
+      "visibleTo": ["customer_success", "boss", "product"]
+    },
+    {
+      "id": "fb-03",
+      "author": "测试-赵工",
+      "content": "退款失败重试 SLA 是多少?现在测试环境重试 3 次就放弃,业务侧无法接受",
+      "module": "支付/退款",
+      "status": "pending",
+      "createdAt": "2026-07-30T09:45:00+08:00",
+      "copyText": "【反馈】支付/退款-赵工:退款失败重试 SLA 是多少?现在测试环境重试 3 次就放弃,业务侧无法接受",
+      "visibleTo": ["customer_success", "product", "dev"]
+    }
+  ],
+  "urgency": "realtime",
+  "moduleLabel": "评论反馈",
+  "moduleIcon": "💬",
+  "actions": ["copy", "detail"]
+}

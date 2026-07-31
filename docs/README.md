@@ -5,11 +5,8 @@
 
 ## 约定
 
-- `02-接口与仪表盘/dashboard/index.html` 这个文件根据版本管理 docs 下所有的交付文件和大纲
-    - 项目工作台: 交互式流程图/架构看板、技术参考资料
-    - 评审资料 : 2026年07月31日 / 评审内容 / 评审细节
-- `02-接口与仪表盘/dashboard/md-viewer.html` 用来预览 docs 下所有的 md 文件
 
+- 
 
 ## 大类总览
 
@@ -22,10 +19,15 @@
 | [`05-复盘与分析/`](05-复盘与分析/) | 技术分析报告、进展夜报、迭代复盘、订单流转专项 | `analysis-reports` `night-reports` `analysis` `复盘` |
 | [`06-交付归档/`](06-交付归档/) | 业务交付物(SQL 工单/定价说明)、结项与验收交付归档 | `business-deliverables` |
 
-## 根目录保留项
+
+## `02-接口与仪表盘`定义
 
 - `index.html` — 文档中心入口页(左侧目录树导航,见 [`02-接口与仪表盘/dashboard/index.html`](02-接口与仪表盘/dashboard/index.html) 的项目工作台)。
-- `reference/` 若存在于历史链接,现已并入 `02-接口与仪表盘/reference/`。
+- 历史链接,并入 `02-接口与仪表盘/reference/`。
+
+- `/dashboard/index.html` 这个文件根据版本管理 docs 下所有的交付文件和大纲
+- `/dashboard/md-viewer.html` 用来预览 docs 下所有的 md 文件
+
 
 ## 承接指引
 
