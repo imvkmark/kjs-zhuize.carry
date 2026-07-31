@@ -144,23 +144,8 @@
     </span>
   </div>
 
-  <!-- V1.0 评审下拉(角色 + 8 字段筛选) -->
+  <!-- V1.0 评审下拉(8 字段筛选) -->
   <div v-if="reviewPanelOpen" class="bg-slate-800/50 border border-slate-700 rounded-lg p-3 mb-3.5">
-
-    <!-- 角色切换 -->
-    <div class="mb-3 pb-2 border-b border-dashed border-slate-700">
-      <div class="text-[10px] text-slate-500 font-semibold mb-1.5">角色</div>
-      <div class="flex flex-wrap gap-1.5">
-        <button v-for="r in roles" :key="r.key"
-          @click="switchRole(r.key)"
-          :class="['px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-all',
-                   currentRole === r.key
-                     ? 'bg-blue-500 border-blue-500 text-white'
-                     : 'bg-slate-900/60 border-slate-700 text-slate-300 hover:border-blue-500 hover:text-white']">
-          {{ r.icon }} {{ r.label }}
-        </button>
-      </div>
-    </div>
 
     <div class="text-[11px] font-bold text-slate-50 mb-2 flex items-center justify-between flex-wrap gap-2">
       <span>🔍 评审内筛选(8 字段 · 多选 OR)</span>
@@ -567,10 +552,6 @@ createApp({
     };
 
     // 持久化
-    const switchRole = (r) => {
-      currentRole.value = r;
-      localStorage.setItem('carry.role', r);
-    };
     const toggleFilter = (field, value) => {
       const map = {
         priority: filterPriority, status: filterStatus, order: filterOrder,
@@ -658,7 +639,7 @@ createApp({
       conclusionClass, refsItems,
       tagColor, tagDotColor, orderColor, priorityBadgeClass,
       cardLabel, getData,
-      switchRole, toggleFilter, onFilterReqId, clearAllReviewFilters,
+      toggleFilter, onFilterReqId, clearAllReviewFilters,
       copyCard
     };
   }
