@@ -1,24 +1,31 @@
 {
   "architecture": {
     "title": "技术架构",
-    "link": "../../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/design/v1.0/architecture.html",
+    "link": "",
+    "plannedFor": "V1.6",
+    "status": "pending",
     "lastUpdated": "2026-07-10"
   },
   "coreFlow": {
     "title": "核心流程",
-    "link": "../../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/design/v1.0/core-flow.html",
+    "link": "",
+    "plannedFor": "V1.6",
+    "status": "pending",
     "lastUpdated": "2026-07-10"
   },
   "modules": {
     "title": "模块下钻",
     "total": 14,
-    "link": "../../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/design/v1.0/modules.html",
+    "link": "",
+    "plannedFor": "V1.7",
+    "status": "pending",
     "lastUpdated": "2026-07-15"
   },
   "docCenter": {
     "title": "文档中心",
     "total": 12,
     "link": "../../index.html",
+    "status": "ready",
     "lastUpdated": "2026-07-30"
   }
 }

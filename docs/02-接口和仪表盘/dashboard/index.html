@@ -110,6 +110,9 @@ body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono','PingFa
 .ref-link:hover{border-color:var(--blue);color:#fff}
 .ref-link .icon{font-size:14px}
 .ref-link .total{font-size:9px;color:var(--dim);margin-left:auto}
+.ref-link.pending{opacity:.5;cursor:not-allowed;border-style:dashed}
+.ref-link.pending:hover{border-color:var(--border);color:inherit}
+.ref-link .planned{font-size:8px;color:var(--amber);background:rgba(245,158,11,.12);padding:1px 5px;border-radius:4px;margin-left:auto;font-weight:600;letter-spacing:.3px}
 
 /* ========== DETAIL VIEW ========== */
 #detail-view{display:none}
@@ -483,18 +486,27 @@ function fallbackCopy(text, cb) {
 function renderRefs() {
   const r = STATE.data.refs;
   const items = [
-    { icon:'🏗️', data:r.architecture, total:null },
-    { icon:'🔄', data:r.coreFlow, total:null },
+    { icon:'🏗️', data:r.architecture },
+    { icon:'🔄', data:r.coreFlow },
     { icon:'🔍', data:r.modules, total:r.modules.total },
     { icon:'📚', data:r.docCenter, total:r.docCenter.total }
   ];
-  document.getElementById('refs-bar').innerHTML = items.map(it =>
-    '<a class="ref-link" href="' + it.data.link + '">' +
+  document.getElementById('refs-bar').innerHTML = items.map(it => {
+    const isPending = it.data.status === 'pending';
+    const cls = 'ref-link' + (isPending ? ' pending' : '');
+    const href = isPending ? '#' : it.data.link;
+    const title = isPending
+      ? escapeHtml(it.data.title) + ' — 待产出 · 预计 ' + escapeHtml(it.data.plannedFor)
+      : escapeHtml(it.data.title);
+    return '<a class="' + cls + '" href="' + href + '"' +
+           (isPending ? ' title="待产出 · 预计 ' + escapeHtml(it.data.plannedFor) + '"' : '') + '>' +
       '<span class="icon">' + it.icon + '</span>' +
-      '<span>' + escapeHtml(it.data.title) + '</span>' +
-      (it.total ? '<span class="total">' + it.total + '</span>' : '') +
-    '</a>'
-  ).join('');
+      '<span>' + title + '</span>' +
+      (isPending
+        ? '<span class="planned">' + escapeHtml(it.data.plannedFor) + ' 待产出</span>'
+        : (it.total ? '<span class="total">' + it.total + '</span>' : '')) +
+    '</a>';
+  }).join('');
 }
 
 function renderFooter() {
