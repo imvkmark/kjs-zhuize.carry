@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carry — 追责系统文档中心</title>
+<meta http-equiv="refresh" content="6;url=dashboard/index.html">
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--border2:#475569;--text:#e2e8f0;--muted:#94a3b8;--dim:#64748b;--blue:#3b82f6;--cyan:#22d3ee;--green:#34d399;--amber:#f59e0b;--red:#ef4444;--purple:#a78bfa;--rose:#fb7185}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh}
+body{
+  background-image:
+    radial-gradient(circle at 15% -8%,rgba(59,130,246,.18),transparent 45%),
+    radial-gradient(circle at 100% 0%,rgba(34,211,238,.10),transparent 38%),
+    radial-gradient(circle at 50% 110%,rgba(167,139,250,.10),transparent 50%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;
+}
+.shell{width:100%;max-width:920px}
+
+/* Header */
+.hd{text-align:center;margin-bottom:28px}
+.hd h1{font-size:26px;font-weight:800;color:#f8fafc;letter-spacing:.4px;background:linear-gradient(120deg,#3b82f6,#22d3ee,#a78bfa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hd .sub{font-size:12.5px;color:var(--muted);margin-top:6px}
+.hd .crumbs{margin-top:14px;font-size:11px;color:var(--dim)}
+.hd .crumbs a{color:var(--blue);text-decoration:none;border-bottom:1px dotted rgba(59,130,246,.45)}
+.hd .crumbs a:hover{border-bottom-style:solid}
+
+/* Section heading */
+.sec-h{display:flex;align-items:center;gap:8px;margin:6px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.sec-h .t{font-size:12.5px;font-weight:700;color:#f1f5f9;text-transform:uppercase;letter-spacing:.6px}
+.sec-h .h{font-size:10.5px;color:var(--muted);font-weight:500;text-transform:none;letter-spacing:0}
+
+/* Card grid */
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media(max-width:680px){.grid{grid-template-columns:1fr}.hd h1{font-size:22px}}
+.card{position:relative;display:block;padding:18px 18px 16px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,#1e293b,#172033);text-decoration:none;color:inherit;transition:all .18s;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue);opacity:.75;transition:width .18s}
+.card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 10px 28px rgba(15,23,42,.55)}
+.card:hover::before{width:5px}
+.card.r::before{background:var(--amber)}
+.card.r:hover{border-color:var(--amber);box-shadow:0 10px 28px rgba(245,158,11,.18)}
+.card.g::before{background:var(--cyan)}
+.card.g:hover{border-color:var(--cyan);box-shadow:0 10px 28px rgba(34,211,238,.18)}
+.card.p::before{background:var(--purple)}
+.card.p:hover{border-color:var(--purple);box-shadow:0 10px 28px rgba(167,139,250,.18)}
+.card-icon{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.card-icon .em{font-size:18px;line-height:1}
+.card-title{font-size:15px;font-weight:700;color:#f8fafc}
+.card-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:auto}
+.tg-red{background:rgba(239,68,68,.15);color:var(--red)}
+.tg-blue{background:rgba(59,130,246,.15);color:var(--blue)}
+.tg-cyan{background:rgba(34,211,238,.15);color:var(--cyan)}
+.tg-amber{background:rgba(245,158,11,.15);color:var(--amber)}
+.tg-purple{background:rgba(167,139,250,.15);color:var(--purple)}
+.card-desc{font-size:12.5px;color:var(--muted);line-height:1.65;margin:6px 0 10px}
+.card-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;font-size:10.5px}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;background:rgba(51,65,85,.55);color:#cbd5e1}
+.chip.red{background:rgba(239,68,68,.13);color:#fca5a5}
+.chip.amber{background:rgba(245,158,11,.13);color:#fcd34d}
+.chip.green{background:rgba(52,211,153,.13);color:#6ee7b7}
+.chip.blue{background:rgba(59,130,246,.13);color:#93c5fd}
+
+/* Stat row for review */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border)}
+.stat{text-align:center}
+.stat .n{font-size:18px;font-weight:800;color:#f8fafc;line-height:1.1}
+.stat .l{font-size:10px;color:var(--dim);margin-top:2px}
+.stat.p0 .n{color:#fca5a5}
+.stat.p1 .n{color:#fcd34d}
+.stat.p2 .n{color:#60a5fa}
+.stat.c .n{color:#6ee7b7}
+
+/* Other links */
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+@media(max-width:680px){.quick{grid-template-columns:1fr 1fr}}
+.quick a{padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#111c33;color:#cbd5e1;text-decoration:none;font-size:12px;transition:all .15s}
+.quick a:hover{border-color:var(--blue);color:#fff;background:#1e293b}
+.quick a b{display:block;color:#f8fafc;font-size:12.5px;margin-bottom:2px;font-weight:600}
+
+/* Footer */
+.ft{margin-top:24px;text-align:center;font-size:11px;color:var(--dim)}
+.ft a{color:#94a3b8;text-decoration:none}
+.ft a:hover{color:var(--blue)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="hd">
+    <h1>Carry 文档中心</h1>
+    <div class="sub">追责系统全端文档 · 评审 / 设计 / 工作台</div>
+    <div class="crumbs">
+      <a href="../README.md">docs/README.md</a> · 当前页:
+      <code style="color:#94a3b8">docs/index.html</code>
+    </div>
+  </header>
+
+  <div class="sec-h"><span class="t">📌 入口</span><span class="h">主工作台与最新评审</span></div>
+
+  <div class="grid">
+
+    <!-- 工作台入口 -->
+    <a class="card g" href="dashboard/index.html">
+      <div class="card-icon">
+        <span class="em">🧭</span>
+        <span class="card-title">项目工作台</span>
+        <span class="card-tag tg-cyan">主入口</span>
+      </div>
+      <div class="card-desc">交互式架构 / 核心流程 / 模块下钻看板,包含 PC Web、H5、服务端三端视图与文档中心导航。</div>
+      <div class="card-meta">
+        <span class="chip blue">架构看板</span>
+        <span class="chip">模块下钻</span>
+        <span class="chip">导出 PDF</span>
+      </div>
+    </a>
+
+    <!-- V1.0 评审入口 -->
+    <a class="card r" href="../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/v1.0-%E8%AF%84%E5%AE%A1-2026-07-30.html">
+      <div class="card-icon">
+        <span class="em">📝</span>
+        <span class="card-title">PRD V1.5 产品评审记录</span>
+        <span class="card-tag tg-amber">V1.0 · 2026-07-30</span>
+      </div>
+      <div class="card-desc">针对《追责系统全端产品需求文档_PRD.md V1.5》的 17 个文档门禁逐项核查,基于 22 项 Open 问题输出整改优先级。</div>
+      <div class="stats">
+        <div class="stat c"><div class="n">有条件</div><div class="l">通过</div></div>
+        <div class="stat p0"><div class="n">20</div><div class="l">P0 阻断</div></div>
+        <div class="stat p1"><div class="n">31</div><div class="l">P1 高风险</div></div>
+        <div class="stat p2"><div class="n">11 / 6 / 0</div><div class="l">不通过 / 有条件 / 通过</div></div>
+      </div>
+      <div class="card-meta" style="margin-top:10px">
+        <span class="chip red">Q3 Q5 Q6 Q8 Q9 Q10</span>
+        <span class="chip amber">Q13 Q14 Q15 Q16 Q17</span>
+        <span class="chip amber">Q18 Q20 Q21 Q22</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="sec-h" style="margin-top:26px"><span class="t">📚 文档资料</span><span class="h">原始资料与评审原文</span></div>
+  <div class="quick">
+    <a href="../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/requirements/v1.0/prd-2026-07-28.md">
+      <b>PRD 需求文档</b>V1.5 · 2026-07-28
+    </a>
+    <a href="../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/requirements/v1.0/prd-html-2026-07-28.html">
+      <b>产品原型</b>可交互 · PC + H5
+    </a>
+    <a href="../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/v1.0-%E8%AF%84%E5%AE%A1-2026-07-30.md">
+      <b>评审原文</b>v1.0 · Markdown
+    </a>
+    <a href="dashboard/md-viewer.html?file=../../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/requirements/v1.0/prd-2026-07-28.md">
+      <b>PRD 在线查看</b>md-viewer 渲染
+    </a>
+    <a href="dashboard/md-viewer.html?file=../../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/requirements/v1.0/prd-html-2026-07-28.html">
+      <b>原型在线查看</b>html 原型
+    </a>
+  </div>
+
+  <div class="ft">
+    页面将在 <span id="cd">6</span> 秒后自动跳转至
+    <a href="dashboard/index.html">项目工作台</a> ·
+    <a href="../README.md">README</a>
+  </div>
+
+</div>
+<script>
+  /* auto-redirect countdown */
+  (function(){
+    var n = 6, el = document.getElementById('cd');
+    if(!el) return;
+    var t = setInterval(function(){
+      n--; el.textContent = n;
+      if(n<=0) clearInterval(t);
+    }, 1000);
+  })();
+</script>
+</body>
+</html>

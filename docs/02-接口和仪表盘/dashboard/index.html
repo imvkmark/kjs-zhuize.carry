@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carry — 追责系统 V1.0 评审工作台</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#e2e8f0;--muted:#94a3b8;--dim:#64748b;--blue:#3b82f6;--green:#34d399;--red:#ef4444;--amber:#f59e0b;--purple:#a78bfa;--cyan:#22d3ee;--rose:#fb7185;--orange:#fb923c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono','PingFang SC','Microsoft YaHei',monospace;font-size:13px;line-height:1.6}
+.code{font-family:'JetBrains Mono','PingFang SC','Microsoft YaHei',monospace;font-size:11px;background:rgba(139,92,246,.15);color:var(--purple);padding:1px 6px;border-radius:4px}
+.page-header{padding:16px;text-align:center;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#1e293b,var(--bg))}
+.page-header h1{font-size:18px;font-weight:700;color:#f8fafc}
+.page-header p{font-size:11px;color:var(--dim);margin-top:2px}
+.page-header .stats{margin-top:10px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.page-header .st{padding:5px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(15,23,42,.6);color:#cbd5e1;font-family:inherit;font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px}
+.page-header .st b{font-size:13px;color:#f8fafc}
+.page-header .st.cond b{color:var(--amber)}
+.page-header .st.p0 b{color:#fca5a5}
+.page-header .st.p1 b{color:#fcd34d}
+.page-header .st.pass b{color:#6ee7b7}
+.page-header .st.nopass b{color:#fca5a5}
+.page-header .st.partial b{color:#fcd34d}
+.page-tools{margin-top:10px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.page-tools a,.page-tools button{border:1px solid var(--border);background:rgba(15,23,42,.82);color:#cbd5e1;border-radius:8px;padding:6px 12px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none}
+.page-tools a:hover,.page-tools button:hover{border-color:var(--blue);color:#fff;background:var(--blue)}
+.page-tools button:disabled{opacity:.65;cursor:wait}
+.main{max-width:1080px;margin:0 auto;padding:16px}
+#card-grid{transition:opacity .25s ease}
+#card-grid.fade-out{opacity:0}
+.card-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:6px}
+.sec-head{font-size:12px;font-weight:700;color:#f1f5f9;margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.sec-head .hint{font-size:10px;color:var(--muted);font-weight:400}
+.mode-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:6px}
+.mode-panel{border:1px solid var(--border);border-radius:12px;padding:14px;background:var(--card)}
+.mode-panel.amber{border-top:3px solid var(--amber)}.mode-panel.red{border-top:3px solid var(--red)}
+.mp-h{font-size:15px;font-weight:700;color:#f8fafc}
+.mp-sub{font-size:10px;color:var(--muted);margin:2px 0 10px}
+.mp-bar{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:10px}
+.mp-bar .nm{width:128px;color:#cbd5e1}.mp-bar .tk{flex:1;background:#1e293b;border-radius:5px;height:11px;overflow:hidden}
+.mp-bar .fl{height:100%;border-radius:5px}.mp-bar .pc{width:62px;text-align:right;color:#94a3b8}
+.mp-row{font-size:10px;color:#cbd5e1;margin:6px 0;line-height:1.55}
+.mp-row b{color:#f8fafc}
+@media(max-width:880px){.card-row{grid-template-columns:1fr 1fr}.mode-wrap{grid-template-columns:1fr}.mp-bar .nm{width:96px}.page-header .st{font-size:10px;padding:4px 8px}}
+@media(max-width:520px){.card-row{grid-template-columns:1fr}}
+#detail-view.fade-in{animation:fadeSlideIn .3s ease both}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.nav-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all .15s;text-decoration:none;display:block;position:relative;overflow:hidden;color:inherit}
+.nav-card:hover{border-color:var(--blue);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.nav-card .nc-icon{font-size:22px;margin-bottom:8px;display:block}
+.nav-card .nc-title{font-size:13px;font-weight:700;color:#f8fafc;display:block;margin-bottom:4px}
+.nav-card .nc-desc{font-size:10px;color:var(--muted);display:block;line-height:1.5}
+.nav-card .nc-badge{position:absolute;top:12px;right:12px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px}
+.nb-red{background:rgba(239,68,68,.15);color:var(--red)}
+.nb-blue{background:rgba(59,130,246,.15);color:var(--blue)}
+.nb-amber{background:rgba(245,158,11,.15);color:var(--amber)}
+.nb-green{background:rgba(52,211,153,.15);color:var(--green)}
+.nb-purple{background:rgba(139,92,246,.15);color:var(--purple)}
+.nb-cyan{background:rgba(34,211,238,.15);color:var(--cyan)}
+.nb-rose{background:rgba(251,113,133,.15);color:var(--rose)}
+.nav-card .nc-bar{margin-top:8px;display:flex;gap:4px;flex-wrap:wrap}
+.nc-tag{font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(51,65,85,.5);color:var(--dim)}
+.nav-card.p0{border-left:3px solid var(--red)}
+.nav-card.p1{border-left:3px solid var(--amber)}
+.nav-card.p2{border-left:3px solid var(--blue)}
+#detail-view{display:none}
+.sec-title{font-size:15px;font-weight:700;color:#f8fafc;margin-bottom:12px;padding-left:8px;border-left:3px solid var(--blue)}
+.sec-desc{font-size:11px;color:var(--dim);margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.crd{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;transition:border-color .15s}
+.crd:hover{border-color:var(--blue)}
+.crd h3{font-size:12px;font-weight:600;color:#f8fafc;margin-bottom:4px}
+.crd p,.crd li{font-size:11px;color:var(--muted)}
+.crd ul{list-style:none;padding:0}
+.crd li{margin-bottom:2px}
+table{width:100%;border-collapse:collapse;font-size:11px;background:var(--card);border-radius:8px;overflow:hidden;margin-top:4px}
+th{background:rgba(51,65,85,.5);padding:6px 8px;text-align:left;font-weight:600;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+td{padding:5px 8px;border-top:1px solid var(--border);vertical-align:top}
+tr:hover td{background:rgba(51,65,85,.2)}
+.sep td{background:rgba(59,130,246,.1);color:var(--blue);font-weight:600;font-size:11px}
+.badge{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600}
+.b-ok{background:rgba(52,211,153,.15);color:var(--green)}.b-p0{background:rgba(239,68,68,.15);color:var(--red)}.b-p1{background:rgba(245,158,11,.15);color:var(--amber)}.b-p2{background:rgba(96,165,250,.15);color:#60a5fa}.b-todo{background:rgba(239,68,68,.1);color:var(--rose)}
+.acc-head{padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border)}
+.acc-head:hover{background:rgba(51,65,85,.3)}
+.acc-head .arr{transition:transform .2s}
+.acc-head.open .arr{transform:rotate(90deg)}
+.acc-body{display:none;padding:10px 12px}
+.acc-body.open{display:block}
+.footer{text-align:center;padding:16px;font-size:10px;color:var(--dim)}
+.filter-bar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.filter-btn{padding:3px 10px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:10px;cursor:pointer;transition:all .15s}
+.filter-btn:hover,.filter-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.alert-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:12px;margin-bottom:10px}
+.alert-box h4{color:var(--red);font-size:13px;margin-bottom:4px}
+.alert-box p{font-size:11px;color:var(--muted)}
+.warn-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px;margin-bottom:10px}
+.warn-box h4{color:var(--amber);font-size:13px;margin-bottom:4px}
+.warn-box p{font-size:11px;color:var(--muted)}
+.ok-box{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);border-radius:8px;padding:12px;margin-bottom:10px}
+.ok-box h4{color:var(--green);font-size:13px;margin-bottom:4px}
+.ok-box p{font-size:11px;color:var(--muted)}
+.gate{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px}
+.gate-head{display:flex;align-items:center;gap:8px}
+.gate-no{font-size:10px;font-weight:700;color:var(--blue);width:54px;flex-shrink:0}
+.gate-name{flex:1;font-size:12px;font-weight:600;color:#f8fafc}
+.gate-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;flex-shrink:0}
+.s-pass{background:rgba(52,211,153,.15);color:var(--green)}
+.s-partial{background:rgba(245,158,11,.15);color:var(--amber)}
+.s-fail{background:rgba(239,68,68,.15);color:var(--red)}
+.copy-row{margin-bottom:6px;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.copy-head{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:rgba(51,65,85,.3);border-bottom:1px solid var(--border)}
+.copy-head .loc{font-size:10px;color:var(--cyan);font-weight:500}
+.copy-head .num{font-size:10px;font-weight:700;color:var(--muted);margin-right:6px}
+.cmt-text{padding:8px 10px;font-size:11px;line-height:1.55;color:var(--text);white-space:pre-wrap;word-break:break-all}
+.copy-btn{padding:4px 10px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--blue);font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.copy-btn:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
+.copy-btn.copied{background:var(--green);color:#000;border-color:var(--green)}
+.tag-p0{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;background:rgba(239,68,68,.15);color:var(--red)}
+.tag-p1{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;background:rgba(245,158,11,.15);color:var(--amber)}
+.tag-p2{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;background:rgba(96,165,250,.15);color:#60a5fa}
+.tag-ok{display:inline-block;padding:1px 6px;border-radius:8px;font-size:9px;font-weight:600;background:rgba(52,211,153,.15);color:var(--green)}
+@media(max-width:880px){.card-row{grid-template-columns:1fr 1fr;gap:8px}.nav-card{padding:10px 12px;border-radius:8px}.nav-card .nc-icon{font-size:16px;margin-bottom:4px;display:inline;margin-right:4px}.nav-card .nc-title{font-size:12px;display:inline}.nav-card .nc-desc{font-size:9px;margin-top:4px}.nav-card .nc-badge{top:8px;right:8px;font-size:9px;padding:1px 6px}.nav-card .nc-bar{margin-top:4px}.nc-tag{font-size:8px}.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+<h1>Carry — 追责系统 V1.0 评审工作台</h1>
+<p>评审日期 2026-07-30 · 评审对象 <code>追责系统全端产品需求文档_PRD.md</code> V1.5 · 整体结论 <b style="color:var(--amber)">有条件通过</b></p>
+<div class="stats">
+  <span class="st cond"><b>有条件</b><span>通过</span></span>
+  <span class="st p0"><b>20</b><span>P0 阻断</span></span>
+  <span class="st p1"><b>31</b><span>P1 高风险</span></span>
+  <span class="st nopass"><b>11</b><span>门禁不通过</span></span>
+  <span class="st partial"><b>6</b><span>门禁有条件</span></span>
+  <span class="st pass"><b>0</b><span>门禁通过</span></span>
+</div>
+<div class="page-tools">
+  <button onclick="exportDashboardPDF(this)">导出当前页 PDF</button>
+  <a href="v1.0-review-2026-07-30.html">评审入口</a>
+  <a href="../../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/requirements/v1.0/review-2026-07-30.md" download>评审原文 Markdown</a>
+  <a href="../../index.html">返回文档中心</a>
+</div>
+</div>
+
+<div class="main">
+
+<div id="card-grid">
+
+<div class="sec-head">⭐ 评审结论与门禁 <span class="hint">整体结论 + 17 个门禁状态汇总</span></div>
+<div class="card-row">
+  <a class="nav-card" onclick="showDetail('sec-summary')" style="cursor:pointer;border-top:3px solid var(--amber)">
+    <span class="nc-badge nb-amber">结论</span>
+    <span class="nc-icon">📋</span><span class="nc-title">★ 整体评审结论 & 下一阶段建议</span>
+    <span class="nc-desc">有条件通过 · 6 / 11 / 0 三档门禁 · P0 阻断 20 / P1 高风险 31 · 明确产品/技术/测试联合评审、Mock 前端、支付/退款/分期/权限/状态机模块的开工边界</span>
+    <div class="nc-bar"><span class="nc-tag">整体结论</span><span class="nc-tag">进入下一阶段</span><span class="nc-tag">整改路径</span></div></a>
+  <a class="nav-card" onclick="showDetail('sec-gates')" style="cursor:pointer;border-top:3px solid var(--red)">
+    <span class="nc-badge nb-red">17 门禁</span>
+    <span class="nc-icon">🚦</span><span class="nc-title">17 个产品文档门禁 · 状态清单</span>
+    <span class="nc-desc">逐项核查 17 个产品文档门禁(基础信息 / 范围 / 角色 / 名词 / 流程 / 状态枚举 / 页面字段 / 口径 / 权限脱敏 / 跨端 / 异常 / 草稿与历史 / 支付与退款 / 安全 / 非功能 / 成功指标 / 依赖与待确认)</span>
+    <div class="nc-bar"><span class="nc-tag">11 ❌</span><span class="nc-tag">6 ⚠️</span><span class="nc-tag">0 ✅</span></div></a>
+  <a class="nav-card" onclick="showDetail('sec-decision')" style="cursor:pointer;border-top:3px solid var(--blue)">
+    <span class="nc-badge nb-blue">决策树</span>
+    <span class="nc-icon">🌳</span><span class="nc-title">是否可启动各项开发?决策对照</span>
+    <span class="nc-desc">按"产品联合评审 / 技术方案 / 接口详细设计 / 前端脚手架 / Mock 前端 / 后端支付分期 / 后端权限 / 后端状态机 / 数据库建表 / 联调 / 生产上线"逐项标注允许状态</span>
+    <div class="nc-bar"><span class="nc-tag">✅ 3</span><span class="nc-tag">⚠️ 1</span><span class="nc-tag">❌ 6</span></div></a>
+</div>
+
+<div class="sec-head">🚨 阻断与风险 <span class="hint">P0 / P1 / P2 完整清单 + Open 问题</span></div>
+<div class="card-row">
+  <a class="nav-card p0" onclick="showDetail('sec-p0')" style="cursor:pointer;border-top:3px solid var(--red)">
+    <span class="nc-badge nb-red">P0 · 20 项</span>
+    <span class="nc-icon">🚨</span><span class="nc-title">★ P0 阻断项清单(必须关闭才能开发)</span>
+    <span class="nc-desc">涵盖状态机(Q3/Q22)、数据库(Q5/Q20)、共案同步(Q6)、权限矩阵(Q13/Q8)、成功指标(Q14)、支付分期(Q15/Q16/Q17/Q18/Q21)、附件/人脸(Q9/Q10)、评审/密码/保留(文档缺失)——20 项</span>
+    <div class="nc-bar"><span class="nc-tag">Q3 Q5 Q6 Q8</span><span class="nc-tag">Q13 Q14 Q15 Q16</span><span class="nc-tag">Q17 Q18 Q20 Q21 Q22</span><span class="nc-tag">文档缺失 5</span></div></a>
+  <a class="nav-card p1" onclick="showDetail('sec-p1')" style="cursor:pointer;border-top:3px solid var(--amber)">
+    <span class="nc-badge nb-amber">P1 · 31 项</span>
+    <span class="nc-icon">⚠️</span><span class="nc-title">★ P1 高风险清单(影响核心流程)</span>
+    <span class="nc-desc">门禁 1 ~ 17 散落的高风险项:角色边界、流程图与状态机一致性、字段口径、违约金与追回、脱敏规范、跨端冲突、草稿生命周期、错误提示统一……31 项</span>
+    <div class="nc-bar"><span class="nc-tag">31 项</span><span class="nc-tag">门禁 2~16 分布</span><span class="nc-tag">影响核心流程</span></div></a>
+  <a class="nav-card p1" onclick="showDetail('sec-open')" style="cursor:pointer;border-top:3px solid var(--purple)">
+    <span class="nc-badge nb-purple">22 项 Open</span>
+    <span class="nc-icon">❓</span><span class="nc-title">★ 22 项 Open 问题清单(按影响范围分级)</span>
+    <span class="nc-desc">15 项 Open 问题(Q3/Q5/Q6/Q8/Q9/Q10/Q13/Q14/Q15/Q16/Q17/Q18/Q20/Q21/Q22)中 11 项直接阻塞开发;7 项 Closed;1 项依据附录 B/C 需补全</span>
+    <div class="nc-bar"><span class="nc-tag">11 阻塞</span><span class="nc-tag">4 待处理</span><span class="nc-tag">7 Closed</span></div></a>
+</div>
+
+<div class="sec-head">🛠️ 整改路径 & 文档 <span class="hint">整改计划 + 相关文档入口</span></div>
+<div class="card-row">
+  <a class="nav-card" onclick="showDetail('sec-remediation')" style="cursor:pointer;border-top:3px solid var(--green)">
+    <span class="nc-badge nb-green">整改</span>
+    <span class="nc-icon">🛠️</span><span class="nc-title">★ 短期/中期/长期整改计划 & 版本演进</span>
+    <span class="nc-desc">1 周内补全评审人/启动 8 个核心 Open 决策/出角色矩阵与字段映射;2 周内启动 6 个支付分期决策;4 周内输出 DDL/OpenAPI 评审稿/前端规范/测试库/上线迁移方案</span>
+    <div class="nc-bar"><span class="nc-tag">V1.6 · V1.7 · V2.0</span><span class="nc-tag">短/中/长期</span></div></a>
+  <a class="nav-card" onclick="showDetail('sec-docs')" style="cursor:pointer;border-top:3px solid var(--cyan)">
+    <span class="nc-badge nb-cyan">文档</span>
+    <span class="nc-icon">📚</span><span class="nc-title">★ 相关文档 · 原文/原型/评审入口</span>
+    <span class="nc-desc">评审原文 Markdown · 评审 HTML 入口 · PRD V1.5 原文(MD + md-viewer 渲染)· 产品原型 HTML · 评审配套索引页</span>
+    <div class="nc-bar"><span class="nc-tag">5 个入口</span><span class="nc-tag">本地直链</span></div></a>
+</div>
+
+<div class="sec-head">👥 评审签字栏 <span class="hint">评审/业务/技术/测试/安全/运营负责人需签字</span></div>
+<div class="mode-wrap">
+  <div class="mode-panel amber">
+    <div class="mp-h">📑 签字栏状态</div>
+    <div class="mp-sub">当前所有签字栏均为空 — 必须在启动正式评审前指定并完成线下签字</div>
+    <div class="mp-bar"><span class="nm">产品负责人</span><span class="tk"><span class="fl" style="width:6.6%;background:var(--green)"></span></span><span class="pc">2 / 2 已指定</span></div>
+    <div class="mp-row">群众 · 东墙 <span style="color:var(--green)">✅ 已指定</span></div>
+    <div class="mp-bar"><span class="nm">业务方代表</span><span class="tk"><span class="fl" style="width:0%;background:var(--red)"></span></span><span class="pc">未指定</span></div>
+    <div class="mp-row"><span style="color:var(--red)">🔴 阻塞:P0-18</span> · 在评审通过前必须补全</div>
+    <div class="mp-bar"><span class="nm">技术 / 前端 / 后端负责人</span><span class="tk"><span class="fl" style="width:0%;background:var(--red)"></span></span><span class="pc">均未指定</span></div>
+    <div class="mp-bar"><span class="nm">测试 / 安全 / 运营负责人</span><span class="tk"><span class="fl" style="width:0%;background:var(--red)"></span></span><span class="pc">均未指定</span></div>
+    <div class="mp-bar"><span class="nm">追责运营 / 核赔运营</span><span class="tk"><span class="fl" style="width:0%;background:var(--red)"></span></span><span class="pc">未指定</span></div>
+    <div class="mp-bar"><span class="nm">外访负责人 / 回访负责人</span><span class="tk"><span class="fl" style="width:0%;background:var(--red)"></span></span><span class="pc">未指定</span></div>
+  </div>
+
+  <div class="mode-panel red">
+    <div class="mp-h">🔗 进入下一阶段 · 速查</div>
+    <div class="mp-sub">11 项决策 = 1 ✅ ✅ ⚠️ + 5 ❌</div>
+    <div class="mp-row">✅ 产品联合评审 · 可启动</div>
+    <div class="mp-row">✅ 技术方案评审 · 可启动</div>
+    <div class="mp-row">✅ 前端工程脚手架 · 可启动</div>
+    <div class="mp-row">✅ 基于 Mock 的前端开发 · 可启动</div>
+    <div class="mp-row">⚠️ 接口详细设计 · <span style="color:var(--amber)">需标注 P0 阻塞项</span></div>
+    <div class="mp-row">❌ 后端支付/退款/分期开发</div>
+    <div class="mp-row">❌ 后端权限开发</div>
+    <div class="mp-row">❌ 后端状态机开发</div>
+    <div class="mp-row">❌ 数据库正式建表</div>
+    <div class="mp-row">❌ 联调测试 / ❌ 生产上线</div>
+    <div class="mp-row" style="margin-top:8px;color:var(--red)">🔒 解锁条件:全部 20 项 P0 关闭</div>
+  </div>
+</div>
+
+</div>
+
+<div id="detail-view">
+  <button class="back-btn" onclick="showGrid()">← 返回工作台</button>
+  <div id="detail-content"></div>
+</div>
+
+</div>
+
+<div class="footer">Carry V1.0 评审工作台 · 追责系统 PRD V1.5 · 评审日期 2026-07-30 · 按 <span style="color:var(--amber)">P0-18 评审/验收负责人</span> 解锁后即可推进</div>
+
+<div style="display:none">
+<!-- ============= 模板:整体评审结论 ============= -->
+<template id="tpl-sec-summary"><div class="sec-title">★ 整体评审结论 · 进入下一阶段建议</div>
+
+<div class="ok-box">
+<h4>评审结论:有条件通过</h4>
+<p>文档在产品功能、业务流程、状态机、数据模型、接口建议、权限原则、安全和测试清单方面已经达到较高的完整度。可进入 <b>产品/技术/测试联合评审</b>,可支持<b>基于 Mock 的前端原型开发</b>。<b>不能</b>作为支付/退款/分期/权限/状态机模块的直接开发依据。</p>
+</div>
+
+<div class="grid3">
+  <div class="crd" style="border-left:3px solid var(--green)">
+    <h3>整体覆盖</h3>
+    <ul>
+      <li>• 三端架构、PC+H5+服务端边界清晰</li>
+      <li>• 7 类业务角色 + 系统服务</li>
+      <li>• 状态机维度隔离(8.1)</li>
+      <li>• 字段唯一来源(附录 B)</li>
+      <li>• 主流程图、敏感字段加密集、跨端接口建议</li>
+    </ul>
+  </div>
+  <div class="crd" style="border-left:3px solid var(--amber)">
+    <h3>条件与待办</h3>
+    <ul>
+      <li>• 11 个门禁不通过 · 6 个有条件</li>
+      <li>• 20 项 P0 阻断 · 31 项 P1 高风险</li>
+      <li>• 22 项 Open 问题中 11 项直接阻塞开发</li>
+      <li>• 老系统替代/下线策略 + 密码策略 + 数据保留/删除规则缺失</li>
+    </ul>
+  </div>
+  <div class="crd" style="border-left:3px solid var(--red)">
+    <h3>不可启动范围</h3>
+    <ul>
+      <li>• 后端支付/退款/分期开发(Q15-Q18/Q21/Q22)</li>
+      <li>• 后端权限(Q8/Q10/Q13)</li>
+      <li>• 后端状态机(Q3/Q20/Q22)</li>
+      <li>• 数据库正式建表(Q5/Q20)</li>
+      <li>• 联调测试 + 生产上线</li>
+    </ul>
+  </div>
+</div>
+
+<div class="alert-box" style="margin-top:16px">
+<h4>核心进入下一阶段规则</h4>
+<p>任何后端/数据库/上线相关工作,都必须以 <b>P0 全部关闭</b> 为前提。可启动的工作只有 4 项:产品联合评审、技术方案评审、前端工程脚手架、基于 Mock 的前端开发。接口详细设计需要先标注 P0 阻塞项后再启动。</p>
+</div></template>
+
+<!-- ============= 模板:17 门禁 ============= -->
+<template id="tpl-sec-gates"><div class="sec-title">🚦 17 个产品文档门禁 · 状态清单</div>
+<div class="sec-desc">P0-18(评审人/验收人待填)对应门禁 1 即是不通过门禁之一;P0-13 / P0-14 与门禁 9(权限与脱敏)相关。本表为按"门禁"的快速诊断视图,P0/P1 清单请进入对应卡片。</div>
+
+<table>
+<thead><tr><th style="width:54px">门禁</th><th>名称</th><th style="width:80px">结论</th><th style="width:200px">主原因</th></tr></thead>
+<tbody>
+<tr><td><b>#1</b></td><td>文档基础信息门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>评审/验收人未填</td></tr>
+<tr><td><b>#2</b></td><td>范围与边界门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>老系统替代/迁移策略缺失</td></tr>
+<tr><td><b>#3</b></td><td>用户与角色门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>权限矩阵未定案(Q13)+ 数据范围矩阵缺失</td></tr>
+<tr><td><b>#4</b></td><td>核心业务概念与名词门</td><td><span class="gate-status s-partial">⚠️ 有条件</span></td><td>加密字段源/快照区分</td></tr>
+<tr><td><b>#5</b></td><td>业务流程门</td><td><span class="gate-status s-partial">⚠️ 有条件</span></td><td>外访与一二手衔接图、流程图与状态机一致性需补</td></tr>
+<tr><td><b>#6</b></td><td>状态与枚举门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>Q3 / Q20 / Q22 必须关闭</td></tr>
+<tr><td><b>#7</b></td><td>页面与功能清单门</td><td><span class="gate-status s-partial">⚠️ 有条件</span></td><td>依赖门禁 3 通过</td></tr>
+<tr><td><b>#8</b></td><td>字段与口径门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>Q21 / Q22 必须关闭</td></tr>
+<tr><td><b>#9</b></td><td>权限与脱敏门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>Q8 / Q10 / Q13 必须关闭</td></tr>
+<tr><td><b>#10</b></td><td>跨端一致性与同步门</td><td><span class="gate-status s-partial">⚠️ 有条件</span></td><td>IM 不脱敏例外跨文档统一、跨端通知机制</td></tr>
+<tr><td><b>#11</b></td><td>异常与边界场景门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>Q5 / Q6 必须关闭</td></tr>
+<tr><td><b>#12</b></td><td>草稿、状态与历史记录门</td><td><span class="gate-status s-partial">⚠️ 有条件</span></td><td>草稿生命周期、历史进程与操作日志边界</td></tr>
+<tr><td><b>#13</b></td><td>支付、退款与资金门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>Q15 / Q16 / Q17 / Q18 / Q21 / Q22 必须关闭</td></tr>
+<tr><td><b>#14</b></td><td>安全与隐私门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>Q9 / Q10 必须关闭 + 密码策略 + 数据保留/删除规则</td></tr>
+<tr><td><b>#15</b></td><td>非功能与体验门</td><td><span class="gate-status s-partial">⚠️ 有条件</span></td><td>H5 设备能力降级方案、错误提示统一规范</td></tr>
+<tr><td><b>#16</b></td><td>成功指标与验收门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>Q14 必须关闭</td></tr>
+<tr><td><b>#17</b></td><td>依赖与待确认问题门</td><td><span class="gate-status s-fail">❌ 不通过</span></td><td>待确认问题需补全并分级</td></tr>
+<tr class="sep"><td colspan="2">汇总</td><td>通过 0 · 有条件 6 · 不通过 11</td><td>门禁清单 17 / 17</td></tr>
+</tbody>
+</table></template>
+
+<!-- ============= 模板:阶段决策树 ============= -->
+<template id="tpl-sec-decision"><div class="sec-title">🌳 是否可启动各项开发?· 决策对照</div>
+<div class="sec-desc">复盘"评审记录 4.3 进入下一阶段的建议"一表。✅ 允许 · ⚠️ 谨慎 · ❌ 不允许。</div>
+
+<table>
+<thead><tr><th style="width:50%">阶段</th><th style="width:90px">是否允许</th><th>备注</th></tr></thead>
+<tbody>
+<tr class="sep"><td colspan="3">轻量 · 不依赖数据/接口/数据库</td></tr>
+<tr><td>产品联合评审</td><td><span class="badge b-ok">✅ 允许</span></td><td>可启动</td></tr>
+<tr><td>技术方案评审</td><td><span class="badge b-ok">✅ 允许</span></td><td>可启动</td></tr>
+<tr><td>前端工程脚手架</td><td><span class="badge b-ok">✅ 允许</span></td><td>可启动</td></tr>
+<tr><td>基于 Mock 的前端开发</td><td><span class="badge b-ok">✅ 允许</span></td><td>可启动</td></tr>
+<tr><td>接口详细设计</td><td><span class="badge b-p2">⚠️ 谨慎</span></td><td>标注 P0 阻塞项后再启动</td></tr>
+<tr class="sep"><td colspan="3">重量 · 依赖数据/接口/数据库</td></tr>
+<tr><td>后端支付/退款/分期开发</td><td><span class="badge b-p0">❌ 不允许</span></td><td>等 Q15/Q16/Q17/Q18/Q21/Q22 关闭</td></tr>
+<tr><td>后端权限开发</td><td><span class="badge b-p0">❌ 不允许</span></td><td>等 Q8/Q10/Q13 关闭</td></tr>
+<tr><td>后端状态机开发</td><td><span class="badge b-p0">❌ 不允许</span></td><td>等 Q3/Q20/Q22 关闭</td></tr>
+<tr><td>数据库正式建表</td><td><span class="badge b-p0">❌ 不允许</span></td><td>等 Q5/Q20 关闭</td></tr>
+<tr><td>联调测试</td><td><span class="badge b-p0">❌ 不允许</span></td><td>等 P0 全部关闭</td></tr>
+<tr><td>生产上线</td><td><span class="badge b-p0">❌ 不允许</span></td><td>等 P0 全部关闭并完成联调</td></tr>
+</tbody>
+</table></template>
+
+<!-- ============= 模板:P0 20 项 ============= -->
+<template id="tpl-sec-p0"><div class="sec-title">🚨 P0 阻断项 · 20 项</div>
+<div class="sec-desc">任何 P0 不关闭,对应模块不可启动开发。按"阻塞模块"分类便于派发到责任人。</div>
+
+<table>
+<thead><tr><th style="width:54px">编号</th><th>阻塞内容</th><th style="width:80px">对应 Q</th><th>阻塞模块</th></tr></thead>
+<tbody>
+<tr><td><span class="tag-p0">P0-01</span></td><td>还号换绑字段映射</td><td>Q3</td><td>状态机、结案、数据库</td></tr>
+<tr><td><span class="tag-p0">P0-02</span></td><td>案件编号统一与历史迁移</td><td>Q5</td><td>数据库、外部对接</td></tr>
+<tr><td><span class="tag-p0">P0-03</span></td><td>共案同步资格/跳过原因/事务边界</td><td>Q6</td><td>共案分配、流转</td></tr>
+<tr><td><span class="tag-p0">P0-04</span></td><td>角色权限矩阵</td><td>Q13</td><td>全部权限相关开发</td></tr>
+<tr><td><span class="tag-p0">P0-05</span></td><td>成功指标基线与目标</td><td>Q14</td><td>验收</td></tr>
+<tr><td><span class="tag-p0">P0-06</span></td><td>分期待还款规则</td><td>Q15</td><td>H5 分期、收款汇总</td></tr>
+<tr><td><span class="tag-p0">P0-07</span></td><td>超额收款与灵活付款规则</td><td>Q16</td><td>资金对账、自动退款</td></tr>
+<tr><td><span class="tag-p0">P0-08</span></td><td>多次部分退款规则</td><td>Q17</td><td>退款模型、并发控制</td></tr>
+<tr><td><span class="tag-p0">P0-09</span></td><td>动态收款码作废规则</td><td>Q18</td><td>支付码服务、风控</td></tr>
+<tr><td><span class="tag-p0">P0-10</span></td><td>支付状态字段统一与历史迁移</td><td>Q20</td><td>数据库、接口</td></tr>
+<tr><td><span class="tag-p0">P0-11</span></td><td>应收金额来源</td><td>Q21</td><td>H5 收款、动态码、分期</td></tr>
+<tr><td><span class="tag-p0">P0-12</span></td><td>资损金额持久化</td><td>Q22</td><td>财务对账、报表</td></tr>
+<tr><td><span class="tag-p0">P0-13</span></td><td>敏感权限默认有效期</td><td>Q8</td><td>授权服务</td></tr>
+<tr><td><span class="tag-p0">P0-14</span></td><td>附件策略(大小/数量/期限)</td><td>Q9</td><td>文件服务</td></tr>
+<tr><td><span class="tag-p0">P0-15</span></td><td>人脸服务/降级/申诉/数据留存</td><td>Q10</td><td>人脸采集、登录、H5 结案</td></tr>
+<tr><td><span class="tag-p0">P0-16</span></td><td>角色数据范围矩阵</td><td>文档缺失</td><td>全部权限相关开发</td></tr>
+<tr><td><span class="tag-p0">P0-17</span></td><td>老系统替代/下线策略</td><td>文档缺失</td><td>范围、迁移</td></tr>
+<tr><td><span class="tag-p0">P0-18</span></td><td>评审人与验收负责人</td><td>文档缺失</td><td>评审闭环</td></tr>
+<tr><td><span class="tag-p0">P0-19</span></td><td>密码策略</td><td>文档缺失</td><td>登录、账号安全</td></tr>
+<tr><td><span class="tag-p0">P0-20</span></td><td>数据保留与删除规则</td><td>文档缺失</td><td>合规、清理</td></tr>
+</tbody>
+</table></template>
+
+<!-- ============= 模板:P1 31 项 ============= -->
+<template id="tpl-sec-p1"><div class="sec-title">⚠️ P1 高风险 · 31 项</div>
+<div class="sec-desc">影响核心流程,补全后才能进入开发;按门禁散落,不复述全部问题描述,详见评审原文。</div>
+
+<table>
+<thead><tr><th style="width:54px">编号</th><th>内容</th><th>门禁</th></tr></thead>
+<tbody>
+<tr><td><span class="tag-p1">P1-01</span></td><td>核赔/审核人员与平台管理员的边界</td><td>#3</td></tr>
+<tr><td><span class="tag-p1">P1-02</span></td><td>角色-菜单-Tab-动作完整矩阵</td><td>#3 / #7 / #9</td></tr>
+<tr><td><span class="tag-p1">P1-03</span></td><td>字段唯一来源与读取范围</td><td>#8</td></tr>
+<tr><td><span class="tag-p1">P1-04</span></td><td>违约金与追回金额关系</td><td>#8</td></tr>
+<tr><td><span class="tag-p1">P1-05</span></td><td>脱敏值格式统一规范</td><td>#8</td></tr>
+<tr><td><span class="tag-p1">P1-06</span></td><td>外访与一手/二手衔接流程图</td><td>#5</td></tr>
+<tr><td><span class="tag-p1">P1-07</span></td><td>流程图与状态机交叉验证</td><td>#5 / #16</td></tr>
+<tr><td><span class="tag-p1">P1-08</span></td><td>页面-角色对应表</td><td>#7</td></tr>
+<tr><td><span class="tag-p1">P1-09</span></td><td>三端共案字段展示口径</td><td>#7</td></tr>
+<tr><td><span class="tag-p1">P1-10</span></td><td>跨端状态修改冲突处理</td><td>#10</td></tr>
+<tr><td><span class="tag-p1">P1-11</span></td><td>后台 IM 不脱敏例外的规则统一</td><td>#10</td></tr>
+<tr><td><span class="tag-p1">P1-12</span></td><td>跨端通知机制</td><td>#10</td></tr>
+<tr><td><span class="tag-p1">P1-13</span></td><td>草稿生命周期</td><td>#12</td></tr>
+<tr><td><span class="tag-p1">P1-14</span></td><td>历史进程与操作日志边界</td><td>#12</td></tr>
+<tr><td><span class="tag-p1">P1-15</span></td><td>退款失败重试 SLA</td><td>#13</td></tr>
+<tr><td><span class="tag-p1">P1-16</span></td><td>退款与分期联动</td><td>#13</td></tr>
+<tr><td><span class="tag-p1">P1-17</span></td><td>日志中敏感字段脱敏</td><td>#14</td></tr>
+<tr><td><span class="tag-p1">P1-18</span></td><td>导出/下载权限矩阵</td><td>#14</td></tr>
+<tr><td><span class="tag-p1">P1-19</span></td><td>H5 设备能力降级方案</td><td>#15</td></tr>
+<tr><td><span class="tag-p1">P1-20</span></td><td>错误提示统一规范</td><td>#15</td></tr>
+<tr><td><span class="tag-p1">P1-21</span></td><td>性能目标结合业务量</td><td>#15</td></tr>
+<tr><td><span class="tag-p1">P1-22</span></td><td>H5 浏览器具体兼容版本</td><td>#15</td></tr>
+<tr><td><span class="tag-p1">P1-23</span></td><td>指标计算公式与告警阈值</td><td>#16</td></tr>
+<tr><td><span class="tag-p1">P1-24</span></td><td>验收标准与状态机交叉验证</td><td>#16</td></tr>
+<tr><td><span class="tag-p1">P1-25</span></td><td>待确认问题补全责任人和截止时间</td><td>#17</td></tr>
+<tr><td><span class="tag-p1">P1-26</span></td><td>待确认问题按影响范围分级</td><td>#17</td></tr>
+<tr><td><span class="tag-p1">P1-27</span></td><td>部分枚举缺少稳定 key</td><td>#6</td></tr>
+<tr><td><span class="tag-p1">P1-28</span></td><td>"部分退款"作为展示与数据状态混用</td><td>#6</td></tr>
+<tr><td><span class="tag-p1">P1-29</span></td><td>加密字段重复存储的源/快照区分</td><td>#4</td></tr>
+<tr><td><span class="tag-p1">P1-30</span></td><td>"溯源链/关联关系/共案"关系图</td><td>#4</td></tr>
+<tr><td><span class="tag-p1">P1-31</span></td><td>PC/H5 菜单保留关系</td><td>#2</td></tr>
+</tbody>
+</table></template>
+
+<!-- ============= 模板:Open 问题 ============= -->
+<template id="tpl-sec-open"><div class="sec-title">❓ 22 项 Open 问题 · 按影响范围分级</div>
+<div class="sec-desc">11 项直接阻塞开发 · 4 项待处理 · 7 项 Closed(部分 Closed 项目缺 SLA 需补)</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterOpen(this,'all')">全部 (22)</button>
+  <button class="filter-btn" onclick="filterOpen(this,'block')">🔒 阻塞开发 (11)</button>
+  <button class="filter-btn" onclick="filterOpen(this,'todo')">🟡 待处理 (4)</button>
+  <button class="filter-btn" onclick="filterOpen(this,'closed')">✅ Closed (7)</button>
+</div>
+
+<table id="open-table">
+<thead><tr><th style="width:54px">Q#</th><th>影响范围</th><th>状态</th></tr></thead>
+<tbody>
+<tr data-cat="block"><td><b>Q3</b></td><td>还号换绑字段映射 → 状态机 / 结案 / 数据库</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q5</b></td><td>案件编号统一与历史迁移 → 数据库 / 外部对接</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q6</b></td><td>共案同步资格/跳过原因/事务边界 → 共案分配流转</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q8</b></td><td>敏感权限默认有效期 → 授权服务</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q9</b></td><td>附件策略(大小/数量/期限) → 文件服务</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q10</b></td><td>人脸服务/降级/申诉/留存 → 人脸采集/登录/H5 结案</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q13</b></td><td>角色权限矩阵 → 全部权限相关开发</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q14</b></td><td>成功指标基线与目标 → 验收</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q15</b></td><td>分期待还款规则 → H5 分期/收款汇总</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q16</b></td><td>超额收款与灵活付款规则 → 资金对账/自动退款</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q17</b></td><td>多次部分退款规则 → 退款模型/并发控制</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q18</b></td><td>动态收款码作废规则 → 支付码服务/风控</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q20</b></td><td>支付状态字段统一与历史迁移 → 数据库/接口</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q21</b></td><td>应收金额来源 → H5 收款/动态码/分期</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="block"><td><b>Q22</b></td><td>资损金额持久化 → 财务对账/报表</td><td><span class="badge b-p0">🔒 阻塞</span></td></tr>
+<tr data-cat="todo"><td><b>Q1</b></td><td>"还号换绑"在结案弹窗 vs 8.4 枚举归属</td><td><span class="badge b-p1">🟡 待处理</span></td></tr>
+<tr data-cat="todo"><td><b>Q2</b></td><td>追责结果枚举 vs 8.4 / 8.2 状态映射</td><td><span class="badge b-p1">🟡 待处理</span></td></tr>
+<tr data-cat="todo"><td><b>Q4</b></td><td>未追回 / 已追回 / 分期 / 还号换绑映射一致</td><td><span class="badge b-p1">🟡 待处理</span></td></tr>
+<tr data-cat="todo"><td><b>Q7</b></td><td>追责员侧基础资料手机号是否同步展示</td><td><span class="badge b-p1">🟡 待处理</span></td></tr>
+<tr data-cat="closed"><td><b>Q11</b></td><td>订单超时自动验收时间</td><td><span class="badge b-ok">✅ Closed</span></td></tr>
+<tr data-cat="closed"><td><b>Q12</b></td><td>案值金额取数口径(取案件/剩余应追/分期当期)</td><td><span class="badge b-ok">✅ Closed</span></td></tr>
+<tr data-cat="closed"><td><b>Q19</b></td><td>退款失败重试(Closed 但 SLA 待补)</td><td><span class="badge b-ok">⚠️ Closed · SLA 待补</span></td></tr>
+<tr data-cat="closed"><td><b>(附录 B / C)</b></td><td>版本号待统一 + 评审人待补</td><td><span class="badge b-ok">✅ Closed</span></td></tr>
+<tr data-cat="closed"><td><b>(附录 B)</b></td><td>appid / secret / 服务域名白名单</td><td><span class="badge b-ok">✅ Closed</span></td></tr>
+<tr data-cat="closed"><td><b>(附录 B)</b></td><td>Webhook 重试策略 + 人工对账流程</td><td><span class="badge b-ok">✅ Closed</span></td></tr>
+<tr data-cat="closed"><td><b>(附录 B)</b></td><td>OpenAPI 评审稿路线</td><td><span class="badge b-ok">✅ Closed</span></td></tr>
+</tbody>
+</table></template>
+
+<!-- ============= 模板:整改计划 ============= -->
+<template id="tpl-sec-remediation"><div class="sec-title">🛠️ 整改路径 & 版本演进计划</div>
+
+<div class="grid3">
+  <div class="crd" style="border-left:3px solid var(--red)">
+    <h3>🔴 短期 · 1 周内</h3>
+    <ul>
+      <li>补全评审人、验收人(门禁 1)</li>
+      <li>启动 Q3 / Q5 / Q6 / Q8 / Q9 / Q10 / Q13 / Q14 联合决策</li>
+      <li>输出角色-菜单-Tab-动作-字段权限矩阵 <span class="tag-p0">V1.6</span></li>
+      <li>输出"还号换绑"字段映射表 <span class="tag-p0">V1.6</span></li>
+    </ul>
+  </div>
+  <div class="crd" style="border-left:3px solid var(--amber)">
+    <h3>🟡 中期 · 2 周内</h3>
+    <ul>
+      <li>启动 Q15 / Q16 / Q17 / Q18 / Q20 / Q21 / Q22 联合决策</li>
+      <li>输出支付/退款/分期/资损完整规则表 <span class="tag-p1">V1.7</span></li>
+      <li>输出分期待还款、超额收款、多次部分退款规则说明</li>
+      <li>补充三端字段口径对照表</li>
+    </ul>
+  </div>
+  <div class="crd" style="border-left:3px solid var(--green)">
+    <h3>🟢 长期 · 4 周内</h3>
+    <ul>
+      <li>输出数据库 DDL 评审稿</li>
+      <li>输出 OpenAPI 接口规范初稿</li>
+      <li>输出前端开发规范(V1.0)</li>
+      <li>输出测试用例库</li>
+      <li>输出上线迁移方案</li>
+      <li>汇总为 <span class="tag-p2">V2.0</span> 正式开发基线</li>
+    </ul>
+  </div>
+</div>
+
+<div class="alert-box" style="margin-top:14px">
+<h4>版本演进</h4>
+<p><b>V1.6</b> 补全角色权限矩阵、字段映射、评审人(短期) · <b>V1.7</b> 补全支付/退款/分期/资损规则(中期) · <b>V2.0</b> 通过所有 P0 门禁,可作为正式开发基线</p>
+</div></template>
+
+<!-- ============= 模板:相关文档 ============= -->
+<template id="tpl-sec-docs"><div class="sec-title">📚 相关文档</div>
+
+<div class="grid2">
+  <a class="crd" href="v1.0-review-2026-07-30.html" style="text-decoration:none;color:inherit;display:block">
+    <h3>📝 评审 HTML 入口</h3>
+    <p>委托 md-viewer 渲染评审原文,带导航和目录。点击直达</p>
+  </a>
+  <a class="crd" href="../../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/requirements/v1.0/review-2026-07-30.md" style="text-decoration:none;color:inherit;display:block" download>
+    <h3>📄 评审原文 Markdown(下载)</h3>
+    <p>42KB · 17 门禁 / P0 20 项 / P1 31 项 / 22 Open / 签字栏。完整评审记录</p>
+  </a>
+  <a class="crd" href="../../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/requirements/v1.0/prd-2026-07-28.md" style="text-decoration:none;color:inherit;display:block" download>
+    <h3>📕 追责系统全端产品需求文档_PRD.md(下载)</h3>
+    <p>V1.5 · 2026-07-28 · 评审对象原文</p>
+  </a>
+  <a class="crd" href="md-viewer.html?file=../../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/requirements/v1.0/prd-2026-07-28.md" target="_blank" style="text-decoration:none;color:inherit;display:block">
+    <h3>📖 PRD V1.5 在线查看</h3>
+    <p>md-viewer 渲染 · 含目录/调用块分色/代码块</p>
+  </a>
+  <a class="crd" href="../../01-%E9%9C%80%E6%B1%82%E5%92%8C%E8%AE%BE%E8%AE%A1/prototypes/v1.0/prd-2026-07-28.html" target="_blank" style="text-decoration:none;color:inherit;display:block">
+    <h3>🎨 产品原型 HTML(本地打开)</h3>
+    <p>三端 PC + H5 可交互原型 · 评审对象配套原型</p>
+  </a>
+  <a class="crd" href="../../index.html" style="text-decoration:none;color:inherit;display:block">
+    <h3>🏠 Carry 文档中心</h3>
+    <p>docs/index.html · 评审 / 工作台 / 资料 入口聚合</p>
+  </a>
+</div></template>
+</div>
+
+<script>
+async function exportDashboardPDF(btn){
+  var oldText = btn ? btn.textContent : '';
+  try {
+    if (!window.html2canvas || !window.jspdf) {
+      alert('PDF 导出依赖还未加载完成,请稍后再试');
+      return;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = '正在生成 PDF...'; }
+    var canvas = await html2canvas(document.body, {
+      scale: 2,
+      backgroundColor: '#0f172a',
+      useCORS: true,
+      ignoreElements: function(el) { return !!(el.closest && (el.closest('.page-tools') || el.closest('.back-btn'))); }
+    });
+    var jsPDF = window.jspdf.jsPDF;
+    var pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
+    var pageW = pdf.internal.pageSize.getWidth();
+    var pageH = pdf.internal.pageSize.getHeight();
+    var margin = 24;
+    var imgW = pageW - margin * 2;
+    var imgH = canvas.height * imgW / canvas.width;
+    var pageContentH = pageH - margin * 2;
+    var img = canvas.toDataURL('image/png');
+    var y = margin;
+    pdf.addImage(img, 'PNG', margin, y, imgW, imgH);
+    var remaining = imgH - pageContentH;
+    while (remaining > 0) {
+      y -= pageContentH;
+      pdf.addPage();
+      pdf.addImage(img, 'PNG', margin, y, imgW, imgH);
+      remaining -= pageContentH;
+    }
+    pdf.save('carry-v10-evaluation-2026-07-30.pdf');
+  } catch (err) {
+    console.error(err);
+    alert('PDF 导出失败:' + (err && err.message ? err.message : err));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = oldText || '导出当前页 PDF'; }
+  }
+}
+var navStack = [];
+function showDetail(id) {
+  var tpl = document.getElementById('tpl-' + id);
+  if (!tpl) { console.warn('no template:', id); return; }
+  var grid = document.getElementById('card-grid');
+  var detail = document.getElementById('detail-view');
+  var fromGrid = grid.style.display !== 'none';
+  navStack.push(fromGrid ? '__grid__' : id);
+  if (fromGrid) {
+    grid.classList.add('fade-out');
+    setTimeout(function() {
+      document.getElementById('detail-content').innerHTML = tpl.innerHTML;
+      grid.style.display = 'none';
+      grid.classList.remove('fade-out');
+      detail.style.display = 'block';
+      detail.classList.remove('fade-in');
+      void detail.offsetWidth;
+      detail.classList.add('fade-in');
+      window.scrollTo(0, 0);
+    }, 250);
+  } else {
+    detail.style.opacity = '0';
+    detail.style.transition = 'opacity .15s ease';
+    setTimeout(function() {
+      document.getElementById('detail-content').innerHTML = tpl.innerHTML;
+      detail.style.opacity = '';
+      detail.style.transition = '';
+      detail.classList.remove('fade-in');
+      void detail.offsetWidth;
+      detail.classList.add('fade-in');
+      window.scrollTo(0, 0);
+    }, 150);
+  }
+}
+function showGrid() {
+  navStack = [];
+  var grid = document.getElementById('card-grid');
+  var detail = document.getElementById('detail-view');
+  detail.style.opacity = '0';
+  detail.style.transition = 'opacity .2s ease';
+  setTimeout(function() {
+    detail.style.display = 'none';
+    detail.style.opacity = '';
+    detail.style.transition = '';
+    grid.style.display = 'block';
+    grid.classList.remove('fade-out');
+    void grid.offsetWidth;
+    grid.style.opacity = '0';
+    grid.style.transition = 'opacity .25s ease';
+    requestAnimationFrame(function() { grid.style.opacity = '1'; });
+    window.scrollTo(0, 0);
+  }, 200);
+}
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') {
+    var d = document.getElementById('detail-view');
+    if (d && d.style.display === 'block') { e.preventDefault(); showGrid(); }
+  }
+});
+function filterOpen(btn, cat) {
+  var tbl = document.getElementById('open-table');
+  if (!tbl) return;
+  tbl.querySelectorAll('tbody tr').forEach(function(r) {
+    r.style.display = (cat === 'all' || r.dataset.cat === cat) ? '' : 'none';
+  });
+  var bar = btn.closest('.filter-bar');
+  if (bar) bar.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+</script>
+</body></html>

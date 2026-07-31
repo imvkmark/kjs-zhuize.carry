@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>文档查看器</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.0/marked.min.js"></script>
+<link rel="stylesheet" href="ref-popover.css">
+<link rel="stylesheet" href="diagram-modal.css">
+<style>
+/* 浅色主题(对齐评审底稿 review-ready 风格) */
+:root{--bg:#f5f7fa;--panel:#ffffff;--card:#ffffff;--border:#e7ebf1;--border2:#d7dee8;--text:#1f2937;--muted:#5b6573;--dim:#8a94a3;--blue:#2563eb;--cyan:#0e7490;--green:#059669;--amber:#b45309;--rose:#e11d48;--purple:#7c3aed}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;
+ background-image:radial-gradient(circle at 18% -10%,rgba(37,99,235,.06),transparent 42%),radial-gradient(circle at 100% 0%,rgba(14,116,144,.05),transparent 34%)}
+.toolbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--border2);padding:9px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+.toolbar a{color:#2563eb;text-decoration:none;font-size:12px;white-space:nowrap;font-weight:600}
+.toolbar a:hover{color:#1d4ed8}
+.toolbar .title{flex:1;font-size:13px;font-weight:700;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.toolbar .tgl{cursor:pointer;border:1px solid var(--border2);border-radius:6px;padding:3px 9px;color:#5b6573;font-size:11px;background:#fff}
+.toolbar .tgl:hover{border-color:#94a3b8;color:#0f172a}
+
+.layout{display:flex;max-width:1280px;margin:0 auto;gap:24px;padding:0 20px}
+/* 目录侧栏 */
+#toc{position:sticky;top:52px;align-self:flex-start;width:248px;flex-shrink:0;max-height:calc(100vh - 70px);overflow:auto;padding:18px 6px 40px;font-size:11.5px}
+#toc .toc-h{font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;font-weight:700}
+#toc a{display:block;color:#64748b;text-decoration:none;padding:3px 10px;border-left:2px solid transparent;line-height:1.45;border-radius:0 4px 4px 0;transition:all .12s}
+#toc a:hover{color:#0f172a;background:rgba(37,99,235,.07)}
+#toc a.lv3{padding-left:22px;font-size:10.5px;color:#94a3b8}
+#toc a.active{color:#1d4ed8;border-left-color:var(--blue);background:rgba(37,99,235,.10);font-weight:600}
+.content{flex:1;min-width:0;padding:24px 4px 80px;max-width:920px}
+
+.content h1{font-size:24px;font-weight:800;color:#0f172a;margin:10px 0 16px;padding-bottom:12px;border-bottom:2px solid var(--blue);letter-spacing:.2px}
+.content h2{font-size:19px;font-weight:700;color:#111827;margin:34px 0 12px;padding:8px 0 7px 13px;border-left:4px solid var(--cyan);background:linear-gradient(90deg,rgba(14,116,144,.09),transparent);border-radius:0 6px 6px 0}
+.content h3{font-size:15.5px;font-weight:700;color:#1d4ed8;margin:24px 0 9px;padding-left:11px;border-left:3px solid #3b82f6}
+.content h4{font-size:13.5px;font-weight:700;color:#0e7490;margin:18px 0 7px}
+.content h5,.content h6{font-size:12.5px;font-weight:700;color:#6d28d9;margin:14px 0 6px}
+.content p{margin:9px 0;font-size:14px;line-height:1.8;color:#334155}
+.content ul,.content ol{margin:8px 0 8px 22px}
+.content li{margin:5px 0;font-size:13.5px;color:#334155;line-height:1.74}
+.content li::marker{color:var(--dim)}
+.content strong{color:#0f172a;font-weight:700}
+.content em{color:#b45309;font-style:normal;font-weight:600}
+.content a{color:#0e7490;text-decoration:none;border-bottom:1px dotted rgba(14,116,144,.5)}
+.content a:hover{color:#155e75;border-bottom-style:solid}
+
+/* 引用块 → callout 自动分色(浅底) */
+.content blockquote{border-left:4px solid var(--blue);padding:11px 16px;margin:14px 0;background:rgba(37,99,235,.06);border-radius:0 8px 8px 0}
+.content blockquote p{color:#1e3a8a;font-size:13px;margin:5px 0}
+.content blockquote.cl-warn{border-left-color:var(--amber);background:rgba(180,83,9,.08)}
+.content blockquote.cl-warn p{color:#92400e}
+.content blockquote.cl-info{border-left-color:var(--cyan);background:rgba(14,116,144,.08)}
+.content blockquote.cl-info p{color:#155e75}
+.content blockquote.cl-note{border-left-color:var(--purple);background:rgba(124,58,237,.08)}
+.content blockquote.cl-note p{color:#5b21b6}
+
+.content code{font-family:'JetBrains Mono','PingFang SC',monospace;font-size:12px;background:#eef1f8;color:#6d28d9;padding:1.5px 6px;border-radius:4px;border:1px solid #e2e6f3}
+.content pre{background:#f8fafc;border:1px solid var(--border2);border-radius:9px;padding:0;margin:14px 0;overflow:hidden}
+.content pre::before{content:"❯ code";display:block;font-size:9.5px;color:var(--dim);padding:6px 14px;border-bottom:1px solid var(--border);background:#eef2f6;letter-spacing:.5px}
+.content pre code{display:block;background:none;padding:14px;font-size:12px;color:#0f172a;line-height:1.6;border:none;overflow-x:auto}
+
+.content table{width:100%;border-collapse:collapse;margin:14px 0;font-size:12.5px;background:#fff;border:1px solid var(--border2);border-radius:9px;overflow:hidden}
+.content thead{background:linear-gradient(180deg,#eef2f7,#f3f6fa)}
+.content th{padding:9px 11px;text-align:left;font-weight:700;color:#334155;font-size:11.5px;border-bottom:1px solid var(--border2)}
+.content td{padding:8px 11px;border-bottom:1px solid #eef1f6;color:#334155;vertical-align:top;line-height:1.62}
+.content tbody tr:nth-child(even){background:#f7f9fc}
+.content tbody tr:hover{background:rgba(37,99,235,.05)}
+.content hr{border:none;border-top:1px solid var(--border2);margin:26px 0}
+.content img{max-width:100%;border-radius:8px}
+.content .dg-wrap{margin:16px 0;border:1px solid var(--border2);border-radius:10px;overflow:hidden;background:#020617;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.content .dg-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 14px;background:#0f172a;border-bottom:1px solid #1e293b}
+.content .dg-t{font-size:12.5px;font-weight:700;color:#7dd3fc}
+.content .dg-full{font-size:11px;color:#22d3ee;background:none;border:1px solid rgba(34,211,238,.4);padding:4px 11px;border-radius:6px;cursor:pointer;font-family:inherit}
+.content .dg-full:hover{background:#22d3ee;color:#04222a}
+.content .dg-frame{display:block;width:100%;border:0;background:#020617;height:600px;transition:height .2s}
+
+.loading,.error{text-align:center;padding:80px 20px;color:var(--dim);font-size:14px}
+.error{color:#dc2626}
+.backtop{position:fixed;right:20px;bottom:22px;z-index:25;width:38px;height:38px;border-radius:10px;border:1px solid var(--border2);background:#fff;color:#2563eb;font-size:16px;cursor:pointer;display:none;box-shadow:0 2px 8px rgba(15,23,42,.10)}
+.backtop:hover{border-color:var(--blue)}
+@media(max-width:980px){#toc{display:none}.content{max-width:none}}
+</style>
+</head>
+<body>
+<div class="toolbar">
+<span class="title" id="doc-title">加载中...</span>
+<button class="tgl" id="toc-tgl" onclick="document.getElementById('toc').classList.toggle('hide')">≡ 目录</button>
+<a href="#" id="raw-link" target="_blank">原始文件</a>
+</div>
+<div class="layout">
+  <nav id="toc"></nav>
+  <div class="content" id="content"><div class="loading">加载文档中…</div></div>
+</div>
+<button class="backtop" id="backtop" title="回到顶部" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+var params = new URLSearchParams(location.search);
+var file = params.get('file');
+var contentEl = document.getElementById('content');
+
+function slugify(t, i){ return 'h-' + i + '-' + (t||'').trim().replace(/\s+/g,'-').replace(/[^\w一-龥-]/g,'').slice(0,40); }
+
+function decorateCallouts(root){
+  root.querySelectorAll('blockquote').forEach(function(bq){
+    var t = (bq.textContent||'').trim();
+    if (/^[⚠️🚫❗]|注意|警告|必须|纠正|勿/.test(t)) bq.classList.add('cl-warn');
+    else if (/^[📊📈🔄]|流程|配套|对照/.test(t)) bq.classList.add('cl-info');
+    else if (/^[📌💡🗂️ℹ️]|说明|提示|备注/.test(t)) bq.classList.add('cl-note');
+  });
+}
+
+function buildTOC(root){
+  var toc = document.getElementById('toc');
+  var heads = root.querySelectorAll('h2, h3');
+  if (heads.length < 3){ toc.style.display='none'; return; }
+  var html = '<div class="toc-h">目录 · TOC</div>';
+  heads.forEach(function(h, i){
+    var id = slugify(h.textContent, i); h.id = id;
+    var lv = h.tagName === 'H3' ? ' lv3' : '';
+    html += '<a class="toc-link'+lv+'" href="#'+id+'">' + h.textContent.replace(/</g,'&lt;') + '</a>';
+  });
+  toc.innerHTML = html;
+  toc.querySelectorAll('a').forEach(function(a){
+    a.onclick = function(e){ e.preventDefault(); var el=document.getElementById(a.getAttribute('href').slice(1)); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); };
+  });
+  // scrollspy
+  var links = [].slice.call(toc.querySelectorAll('a'));
+  var obs = new IntersectionObserver(function(ents){
+    ents.forEach(function(en){
+      if(en.isIntersecting){
+        var id = en.target.id;
+        links.forEach(function(l){ l.classList.toggle('active', l.getAttribute('href') === '#'+id); });
+      }
+    });
+  }, {rootMargin:'-10% 0px -80% 0px'});
+  heads.forEach(function(h){ obs.observe(h); });
+}
+
+function dgSize(f){ try{ var d=f.contentWindow.document; var h=Math.max(d.body.scrollHeight,d.documentElement.scrollHeight); if(h>140) f.style.height=(h+10)+'px'; }catch(e){/* 跨源回退固定高度+内部滚动 */} }
+function processDiagrams(root){
+  root.querySelectorAll('.diagram[data-src]').forEach(function(el){
+    var src=el.getAttribute('data-src'), title=el.getAttribute('data-title')||'图';
+    var w=document.createElement('div'); w.className='dg-wrap';
+    w.innerHTML='<div class="dg-head"><span class="dg-t">'+title+'</span>'
+      +'<button class="dg-full" type="button">全屏查看 →</button></div>'
+      +'<iframe class="dg-frame" loading="lazy" title="'+title+'"></iframe>';
+    var fr=w.querySelector('iframe'); fr.onload=function(){dgSize(fr);}; fr.src=src;
+    w.querySelector('.dg-full').onclick=function(){ if(window.DiagramModal) DiagramModal.open(src,title); };
+    el.replaceWith(w);
+  });
+}
+if (!file) { contentEl.innerHTML = '<div class="error">未指定文件</div>'; }
+else {
+  var decoded = decodeURIComponent(file);
+  document.getElementById('doc-title').textContent = decoded.split('/').pop();
+  document.getElementById('raw-link').href = file;
+  fetch(file)
+    .then(function(r){ if(!r.ok) throw new Error(r.status+' '+r.statusText); return r.arrayBuffer(); })
+    .then(function(buf){
+      var text = new TextDecoder('utf-8').decode(buf);
+      contentEl.innerHTML = marked.parse(text);
+      var h1 = contentEl.querySelector('h1'); if(h1) document.title = h1.textContent + ' — Carry';
+      decorateCallouts(contentEl);
+      processDiagrams(contentEl);
+      buildTOC(contentEl);
+      if (window.RefPopover) RefPopover.load('ref-data.json').then(function(){ RefPopover.apply(contentEl); }).catch(function(){});
+    })
+    .catch(function(e){ contentEl.innerHTML = '<div class="error">加载失败: '+e.message+'</div>'; });
+}
+window.addEventListener('scroll', function(){ document.getElementById('backtop').style.display = window.scrollY>500?'block':'none'; });
+</script>
+<script src="ref-popover.js"></script>
+<script src="diagram-modal.js"></script>
+</body>
+</html>
