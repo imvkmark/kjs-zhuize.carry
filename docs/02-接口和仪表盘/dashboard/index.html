@@ -148,7 +148,17 @@
   <div v-if="reviewPanelOpen" class="bg-slate-800/50 border border-slate-700 rounded-lg p-3 mb-3.5">
 
     <div class="text-[11px] font-bold text-slate-50 mb-2 flex items-center justify-between flex-wrap gap-2">
-      <span>🔍 评审内筛选(8 字段 · 多选 OR)</span>
+      <span class="flex items-center gap-1.5">
+        🔍 评审内筛选(8 字段 · 多选 OR)
+        <span v-if="hasAnyFilter"
+          class="text-[9px] px-1.5 py-0.5 rounded font-semibold bg-blue-500/15 border border-blue-500/40 text-blue-300">
+          当前筛选命中 <b class="text-blue-200">{{ filteredItemCount }}</b> 条 / 总 {{ totalItems }} 条
+        </span>
+        <span v-else
+          class="text-[9px] px-1.5 py-0.5 rounded font-semibold bg-slate-700/40 border border-slate-700 text-slate-400">
+          总计 {{ totalItems }} 条
+        </span>
+      </span>
       <button v-if="hasAnyFilter" @click="clearAllReviewFilters"
         class="px-2 py-0.5 rounded text-[9px] border border-dashed border-slate-700 text-slate-500 hover:text-red-400 hover:border-red-400">
         ✕ 清空全部
@@ -378,7 +388,7 @@ createApp({
     const loading = ref(true);
     const loadError = ref('');
 
-    const currentRole = ref(localStorage.getItem('carry.role') || 'product');
+    const currentRole = ref(localStorage.getItem('carry.role') || 'dev');
 
     // 8 字段筛选(V1.0 评审内部 · 多选 OR)
     const loadFilter = (k) => JSON.parse(localStorage.getItem('carry.f.' + k) || '[]');
@@ -490,6 +500,9 @@ createApp({
     });
 
     const filteredItemCount = computed(() => totalFiltered.value);
+    const totalItems = computed(() => {
+      return (visibleCards.value).reduce((s, c) => s + (getData(c.id).total || 0), 0);
+    });
 
     const filterDesc = computed(() => {
       const parts = [];
@@ -632,7 +645,7 @@ createApp({
       reviewPanelOpen,
       filterPriority, filterStatus, filterOrder, filterType,
       filterOwner, filterModule, filterReq, filterReqIdPrefix,
-      allModules, hasAnyFilter, filteredItemCount,
+      allModules, hasAnyFilter, filteredItemCount, totalItems,
       roles, orderLevels, rolePrompt, roleLabel,
       visibleCards, cardSummary, totalFiltered, filterDesc,
       filteredItemsOf,
